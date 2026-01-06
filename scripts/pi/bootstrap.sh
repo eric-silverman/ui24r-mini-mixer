@@ -129,6 +129,9 @@ systemctl enable --now "${SERVICE_NAME}.service"
 systemctl enable --now "${SERVICE_NAME}-update.timer"
 
 echo "Running initial update..."
+set -a
+source "${ENV_FILE}"
+set +a
 "${INSTALL_DIR}/scripts/pi/update.sh"
 
 echo "Bootstrap complete."
