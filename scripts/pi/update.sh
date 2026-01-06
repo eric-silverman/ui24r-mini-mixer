@@ -77,7 +77,7 @@ asset_url = ""
 for asset in assets:
     name = asset.get("name") or ""
     if name.startswith(asset_prefix) and name.endswith(".tar.gz"):
-        asset_url = asset.get("browser_download_url") or ""
+        asset_url = asset.get("url") or ""
         break
 
 print(tag)
@@ -114,7 +114,8 @@ trap cleanup EXIT
 
 asset_path="${tmp_dir}/release.tar.gz"
 
-curl -fsSL "$asset_url" -o "$asset_path"
+download_args=("${curl_args[@]}" -H "Accept: application/octet-stream")
+curl "${download_args[@]}" "$asset_url" -o "$asset_path"
 
 tar -xzf "$asset_path" -C "$tmp_dir"
 
