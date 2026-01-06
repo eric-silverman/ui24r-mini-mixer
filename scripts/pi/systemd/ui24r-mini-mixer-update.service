@@ -1,0 +1,10 @@
+[Unit]
+Description=Ui24R Mini Mixer updater
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/default/ui24r-mini-mixer
+WorkingDirectory=/opt/ui24r-mini-mixer
+ExecStart=/opt/ui24r-mini-mixer/scripts/pi/update.sh

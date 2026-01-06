@@ -1,0 +1,27 @@
+{
+  "name": "ui24r-mini-mixer-server",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "test:fader": "tsx src/test-fader.ts"
+  },
+  "dependencies": {
+    "@fastify/cors": "^8.5.0",
+    "@fastify/static": "^6.12.0",
+    "@fastify/websocket": "^8.3.1",
+    "dotenv": "^16.4.5",
+    "fastify": "^4.26.2",
+    "rxjs": "^7.8.1",
+    "soundcraft-ui-connection": "^4.0.0",
+    "ws": "^8.16.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.9",
+    "tsx": "^4.7.1",
+    "typescript": "^5.3.3"
+  }
+}

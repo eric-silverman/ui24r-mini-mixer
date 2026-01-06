@@ -1,0 +1,13 @@
+[Unit]
+Description=Ui24R Mini Mixer
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/ui24r-mini-mixer/server
+EnvironmentFile=/etc/default/ui24r-mini-mixer
+ExecStart=/usr/bin/node dist/index.js
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
