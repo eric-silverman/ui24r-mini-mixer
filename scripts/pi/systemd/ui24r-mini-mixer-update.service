@@ -7,4 +7,4 @@ Wants=network-online.target
 Type=oneshot
 EnvironmentFile=/etc/default/ui24r-mini-mixer
 WorkingDirectory=/opt/ui24r-mini-mixer
-ExecStart=/opt/ui24r-mini-mixer/scripts/pi/update.sh
+ExecStart=/usr/bin/env bash /opt/ui24r-mini-mixer/scripts/pi/update.sh

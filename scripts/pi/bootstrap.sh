@@ -108,7 +108,7 @@ Wants=network-online.target
 Type=oneshot
 EnvironmentFile=${ENV_FILE}
 WorkingDirectory=${INSTALL_DIR}
-ExecStart=${INSTALL_DIR}/scripts/pi/update.sh
+ExecStart=/usr/bin/env bash ${INSTALL_DIR}/scripts/pi/update.sh
 EOF
 
 cat > "/etc/systemd/system/${SERVICE_NAME}-update.timer" <<EOF
