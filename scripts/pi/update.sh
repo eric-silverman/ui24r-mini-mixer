@@ -57,15 +57,16 @@ fi
 release_json=$(curl "${curl_args[@]}" "$api_url")
 
 mapfile -t release_fields < <(
-  python3 - <<'PY' <<<"$release_json"
+  RELEASE_JSON="$release_json" python3 - <<'PY'
 import json
 import os
 import sys
 
 asset_prefix = os.environ.get("ASSET_PREFIX", "ui24r-mini-mixer")
+release_json = os.environ.get("RELEASE_JSON", "")
 
 try:
-    data = json.load(sys.stdin)
+    data = json.loads(release_json)
 except json.JSONDecodeError:
     print(" ")
     sys.exit(0)
