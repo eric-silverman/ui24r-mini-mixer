@@ -52,6 +52,7 @@ Then disable sample mode by clicking the status pill in the UI.
 - Assign-to-Me per device for AUX mixes.
 - Server-side persistence for layout/view settings + global groups.
 - Optional sample data mode for UI testing.
+- Progressive Web App (PWA) support for "Add to Home Screen" on iOS and Android.
 
 ## Demo Mode (Static Site)
 
@@ -65,6 +66,40 @@ VITE_DEMO=true npm run build
 Deploy `client/dist` to any static host (Netlify, Vercel, GitHub Pages, etc.).
 
 **Note**: Development mode (`npm run dev`) automatically uses sample data. Demo mode is specifically for production static builds without a backend.
+
+## PWA (Add to Home Screen)
+
+This app is a Progressive Web App and can be installed on iOS and Android devices for a more app-like experience.
+
+### iOS Installation
+
+1. Open the app in Safari (Chrome/Firefox don't support PWA installation on iOS)
+2. Tap the Share button (square with arrow pointing up)
+3. Scroll down and tap "Add to Home Screen"
+4. Tap "Add" in the top right
+
+The app will now appear on your home screen with a custom icon and run in fullscreen mode without browser UI.
+
+### Android Installation
+
+1. Open the app in Chrome
+2. Tap the menu (three dots)
+3. Tap "Add to Home screen" or "Install app"
+4. Confirm by tapping "Add" or "Install"
+
+### Custom App Icon
+
+The default icon is generated from `/client/public/icon.svg`. To customize it:
+
+1. Edit `client/public/icon.svg` or replace it with your own design
+2. Regenerate PNG icons:
+
+```sh
+cd client
+./generate-icons.sh
+```
+
+This creates `icon-192.png` and `icon-512.png` from the SVG. You can also create these manually using any image editor.
 
 ## Production (Raspberry Pi)
 

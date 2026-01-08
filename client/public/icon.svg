@@ -1,0 +1,22 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="512" height="512" fill="#2563eb" rx="64"/>
+
+  <!-- Mixer faders representation -->
+  <g fill="white">
+    <!-- Left fader -->
+    <rect x="80" y="120" width="40" height="280" rx="4" fill="#1e40af"/>
+    <rect x="70" y="180" width="60" height="80" rx="8"/>
+
+    <!-- Middle fader -->
+    <rect x="200" y="120" width="40" height="280" rx="4" fill="#1e40af"/>
+    <rect x="190" y="220" width="60" height="80" rx="8"/>
+
+    <!-- Right fader -->
+    <rect x="320" y="120" width="40" height="280" rx="4" fill="#1e40af"/>
+    <rect x="310" y="160" width="60" height="80" rx="8"/>
+
+    <!-- Title text -->
+    <text x="256" y="450" font-family="Arial, sans-serif" font-size="48" font-weight="bold" text-anchor="middle" fill="white">Ui24R</text>
+  </g>
+</svg>
