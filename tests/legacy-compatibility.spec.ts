@@ -206,18 +206,24 @@ test.describe('Production Build Functionality', () => {
     await page.goto('/?sample=true');
     await page.waitForSelector('.app-shell', { timeout: 15000 });
 
+    // Wait for channel cards to render with sample data
+    await page.waitForSelector('.channel-card', { timeout: 15000 });
+
     // Verify core functionality works
     const channels = await page.locator('.channel-card').count();
     expect(channels).toBeGreaterThan(0);
 
-    // Verify faders are interactive (use input[type="range"] as fallback)
-    const fader = page.locator('.channel-card input[type="range"]').first();
+    // Verify faders are interactive
+    const fader = page.locator('.fader').first();
     await expect(fader).toBeVisible({ timeout: 10000 });
   });
 
   test('production build Simple Controls toggle works', async ({ page }) => {
     await page.goto('/?sample=true');
     await page.waitForSelector('.app-shell', { timeout: 15000 });
+
+    // Wait for channel cards to render with sample data
+    await page.waitForSelector('.channel-card', { timeout: 15000 });
 
     // Check steppers don't exist initially
     let steppersBefore = await page.locator('.simple-stepper').count();
@@ -237,8 +243,11 @@ test.describe('Production Build Functionality', () => {
     await page.goto('/?sample=true');
     await page.waitForSelector('.app-shell', { timeout: 15000 });
 
-    // Use more robust selector for fader
-    const fader = page.locator('.channel-card input[type="range"]').first();
+    // Wait for channel cards to render with sample data
+    await page.waitForSelector('.channel-card', { timeout: 15000 });
+
+    // Use .fader selector like other tests
+    const fader = page.locator('.fader').first();
     await expect(fader).toBeVisible({ timeout: 10000 });
 
     const lcd = page.locator('.strip-display-value').first();
