@@ -104,6 +104,15 @@ body {
   background: rgba(255, 183, 90, 0.12);
 }
 
+.sha-badge {
+  font-family: 'Share Tech Mono', monospace;
+  letter-spacing: 0.05em;
+  text-transform: none;
+  color: #7eb8da;
+  border-color: rgba(126, 184, 218, 0.35);
+  background: rgba(126, 184, 218, 0.12);
+}
+
 .brand-sub {
   font-size: 11px;
   letter-spacing: 0.38em;

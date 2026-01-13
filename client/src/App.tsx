@@ -356,6 +356,7 @@ export default function App() {
   // Automatically use sample data in dev builds or when VITE_DEMO=true
   const shouldUseSampleData = isDev || isDemo;
   const appVersion = __APP_VERSION__.trim();
+  const gitSha = __GIT_SHA__.trim();
   const versionLabel = appVersion
     ? appVersion.startsWith('v')
       ? appVersion
@@ -2661,6 +2662,11 @@ export default function App() {
               <span className="dev-badge">{versionLabel}</span>
             ) : (
               isDev && <span className="dev-badge">Dev</span>
+            )}
+            {isDemo && gitSha && (
+              <span className="dev-badge sha-badge" title={`Commit: ${gitSha}`}>
+                {gitSha}
+              </span>
             )}
           </div>
         </div>

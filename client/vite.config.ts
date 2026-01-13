@@ -17,7 +17,23 @@ const resolveAppVersion = () => {
   }
 };
 
+const resolveGitSha = () => {
+  if (process.env.VITE_GIT_SHA) {
+    // Truncate to 7 chars (short SHA) if full SHA is provided
+    return process.env.VITE_GIT_SHA.slice(0, 7);
+  }
+
+  try {
+    return execSync('git rev-parse --short HEAD', { stdio: ['ignore', 'pipe', 'ignore'] })
+      .toString()
+      .trim();
+  } catch {
+    return '';
+  }
+};
+
 const appVersion = resolveAppVersion();
+const gitSha = resolveGitSha();
 
 export default defineConfig({
   plugins: [
@@ -32,6 +48,7 @@ export default defineConfig({
   base: process.env.VITE_BASE_PATH || '/',
   define: {
     __APP_VERSION__: JSON.stringify(appVersion),
+    __GIT_SHA__: JSON.stringify(gitSha),
   },
   server: {
     port: 5173,

@@ -71,7 +71,7 @@ jobs:
         run: npm ci --prefix client
 
       - name: Build demo site
-        run: VITE_DEMO=true VITE_BASE_PATH=/ui24r-mini-mixer/ npm run build --prefix client
+        run: VITE_DEMO=true VITE_BASE_PATH=/ui24r-mini-mixer/ VITE_GIT_SHA=${{ github.sha }} npm run build --prefix client
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
