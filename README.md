@@ -57,7 +57,13 @@ Then disable sample mode by clicking the status pill in the UI.
 
 ## Demo Mode (Static Site)
 
-Demo mode builds a static site that always uses sample data (no backend server needed).
+A live demo is automatically deployed to GitHub Pages on every push to main:
+
+**[Live Demo](https://eric-silverman.github.io/ui24r-mini-mixer/)**
+
+Demo mode uses sample data (no real mixer required) so you can explore the UI.
+
+### Building Demo Locally
 
 ```sh
 cd ui24r-mini-mixer/client

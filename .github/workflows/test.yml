@@ -9,6 +9,15 @@ on:
 env:
   CI: true
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
   unit-tests:
     name: Unit Tests
@@ -140,3 +149,40 @@ jobs:
           echo "- E2E tests: 240"
           echo "- Legacy tests: 9"
           echo "- Total: 778 tests"
+
+  deploy-demo:
+    name: Deploy Demo to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: [unit-tests, e2e-tests, legacy-tests]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install client dependencies
+        run: npm ci --prefix client
+
+      - name: Build demo site
+        run: VITE_DEMO=true VITE_BASE_PATH=/ui24r-mini-mixer/ npm run build --prefix client
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './client/dist'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
