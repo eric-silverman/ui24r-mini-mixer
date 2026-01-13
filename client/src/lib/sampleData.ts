@@ -31,12 +31,12 @@ const AUX_NAMES = [
   'Wedge 1',
   'Wedge 2',
   'Wedge 3',
-  'IEM 1',
-  'IEM 2',
-  'IEM 3',
+  'IEM 1 L',  // Stereo pair
+  'IEM 1 R',  // Stereo pair
+  'IEM 2 L',  // Stereo pair
+  'IEM 2 R',  // Stereo pair
   'Drummer',
   'Keys',
-  'Guitar',
   'Spare',
 ];
 

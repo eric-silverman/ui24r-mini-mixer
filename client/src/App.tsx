@@ -127,6 +127,54 @@ function getGroupKey(busType: BusType, busId: number, groupType: string, groupId
   return `${VIEW_GROUP_PREFIX}:${busType}:${groupType}:${groupId}`;
 }
 
+// Stereo AUX pair detection - linked buses have names ending in " L" and " R"
+type AuxDisplayItem =
+  | { type: 'mono'; aux: AuxBusState }
+  | { type: 'stereo'; name: string; left: AuxBusState; right: AuxBusState };
+
+function groupStereoAuxBuses(auxBuses: AuxBusState[]): AuxDisplayItem[] {
+  const result: AuxDisplayItem[] = [];
+  const processed = new Set<number>();
+
+  for (const aux of auxBuses) {
+    if (processed.has(aux.id)) continue;
+
+    // Check if this is a left channel of a stereo pair
+    if (aux.name.endsWith(' L')) {
+      const baseName = aux.name.slice(0, -2);
+      const rightBus = auxBuses.find(
+        other => other.name === `${baseName} R` && !processed.has(other.id)
+      );
+      if (rightBus) {
+        result.push({ type: 'stereo', name: baseName, left: aux, right: rightBus });
+        processed.add(aux.id);
+        processed.add(rightBus.id);
+        continue;
+      }
+    }
+
+    // Check if this is a right channel (in case R comes before L in the list)
+    if (aux.name.endsWith(' R')) {
+      const baseName = aux.name.slice(0, -2);
+      const leftBus = auxBuses.find(
+        other => other.name === `${baseName} L` && !processed.has(other.id)
+      );
+      if (leftBus) {
+        result.push({ type: 'stereo', name: baseName, left: leftBus, right: aux });
+        processed.add(aux.id);
+        processed.add(leftBus.id);
+        continue;
+      }
+    }
+
+    // Mono bus
+    result.push({ type: 'mono', aux });
+    processed.add(aux.id);
+  }
+
+  return result;
+}
+
 function buildDefaultLayout(channelIds: number[]): ChannelSection[] {
   return [
     { id: FAVORITES_ID, name: 'My Channels', channelIds: [], offsetDb: 0, mode: 'ignore-inf' },
@@ -2982,22 +3030,51 @@ export default function App() {
           </button>
         )}
         <div className="aux-bar">
-          {state.auxBuses
-            .filter(aux =>
-              assignedAuxId === null || showAllAuxMixes ? true : aux.id === assignedAuxId
+          {groupStereoAuxBuses(
+            state.auxBuses.filter(aux =>
+              assignedAuxId === null || showAllAuxMixes
+                ? true
+                : aux.id === assignedAuxId ||
+                  // Include both L/R if either is assigned
+                  (aux.name.endsWith(' L') &&
+                    state.auxBuses.find(
+                      other => other.id === assignedAuxId && other.name === aux.name.slice(0, -2) + ' R'
+                    )) ||
+                  (aux.name.endsWith(' R') &&
+                    state.auxBuses.find(
+                      other => other.id === assignedAuxId && other.name === aux.name.slice(0, -2) + ' L'
+                    ))
             )
-            .map(aux => (
-            <button
-              key={aux.id}
-              className={`aux-button ${
-                activeBus.type === 'aux' && activeBus.id === aux.id ? 'aux-button-active' : ''
-              }`}
-              type="button"
-              onClick={() => handleSelectAux(aux.id)}
-            >
-              {aux.name || `AUX ${aux.id}`}
-            </button>
-          ))}
+          ).map(item =>
+            item.type === 'mono' ? (
+              <button
+                key={item.aux.id}
+                className={`aux-button ${
+                  activeBus.type === 'aux' && activeBus.id === item.aux.id ? 'aux-button-active' : ''
+                }`}
+                type="button"
+                onClick={() => handleSelectAux(item.aux.id)}
+              >
+                {item.aux.name || `AUX ${item.aux.id}`}
+              </button>
+            ) : (
+              <button
+                key={`stereo-${item.left.id}-${item.right.id}`}
+                className={`aux-button aux-button-stereo ${
+                  activeBus.type === 'aux' &&
+                  (activeBus.id === item.left.id || activeBus.id === item.right.id)
+                    ? 'aux-button-active'
+                    : ''
+                }`}
+                type="button"
+                onClick={() => handleSelectAux(item.left.id)}
+                title={`Stereo: ${item.left.name} + ${item.right.name}`}
+              >
+                <span className="aux-stereo-name">{item.name}</span>
+                <span className="aux-stereo-badge">ST</span>
+              </button>
+            )
+          )}
         </div>
       </div>
 

@@ -279,6 +279,31 @@ body {
   border-color: rgba(212, 179, 78, 0.6);
 }
 
+.aux-button-stereo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.aux-stereo-name {
+  flex: 1;
+}
+
+.aux-stereo-badge {
+  font-size: 8px;
+  font-weight: 700;
+  padding: 2px 4px;
+  border-radius: 3px;
+  background: rgba(126, 184, 218, 0.25);
+  color: #7eb8da;
+  letter-spacing: 0.05em;
+}
+
+.aux-button-active .aux-stereo-badge {
+  background: rgba(27, 29, 35, 0.2);
+  color: #1b1d23;
+}
+
 .connect-panel {
   padding: 14px 18px;
   border-radius: 0;
