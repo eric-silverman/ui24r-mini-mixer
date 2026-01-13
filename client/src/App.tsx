@@ -1046,6 +1046,56 @@ export default function App() {
     return () => cleanup();
   }, [handleWsMessage, sampleMode]);
 
+  // Simulate VU meter activity in sample mode
+  useEffect(() => {
+    if (!sampleMode) {
+      return undefined;
+    }
+
+    // Per-channel state for smooth meter animation
+    const channelState = new Map<number, { base: number; velocity: number }>();
+
+    const interval = setInterval(() => {
+      setState(current => ({
+        ...current,
+        channels: current.channels.map(channel => {
+          // Skip muted channels - their meters should be at 0
+          if (channel.muted) {
+            return { ...channel, meterPre: 0, meterPostFader: 0 };
+          }
+
+          // Get or initialize per-channel animation state
+          let state = channelState.get(channel.id);
+          if (!state) {
+            state = { base: Math.random() * 0.3 + 0.4, velocity: 0 };
+            channelState.set(channel.id, state);
+          }
+
+          // Smooth random walk for natural movement
+          state.velocity += (Math.random() - 0.5) * 0.15;
+          state.velocity *= 0.85; // Damping
+          state.base += state.velocity;
+          state.base = Math.max(0.2, Math.min(0.9, state.base));
+
+          // Occasional random peaks
+          const peak = Math.random() > 0.95 ? Math.random() * 0.3 : 0;
+
+          // Scale by fader position - higher fader = higher meter
+          const faderScale = channel.fader * 0.8 + 0.2;
+          const meterValue = Math.min(1, (state.base + peak) * faderScale);
+
+          // Add slight variation between pre and post
+          const meterPre = meterValue;
+          const meterPostFader = meterValue * channel.fader;
+
+          return { ...channel, meterPre, meterPostFader };
+        }),
+      }));
+    }, 60); // ~16fps for smooth animation
+
+    return () => clearInterval(interval);
+  }, [sampleMode]);
+
   const handleFaderChange = (id: number, value: number) => {
     const clamped = clamp(value);
     setState(current => ({
