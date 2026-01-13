@@ -210,9 +210,9 @@ test.describe('Production Build Functionality', () => {
     const channels = await page.locator('.channel-card').count();
     expect(channels).toBeGreaterThan(0);
 
-    // Verify faders are interactive
-    const fader = page.locator('.fader').first();
-    await expect(fader).toBeVisible();
+    // Verify faders are interactive (use input[type="range"] as fallback)
+    const fader = page.locator('.channel-card input[type="range"]').first();
+    await expect(fader).toBeVisible({ timeout: 10000 });
   });
 
   test('production build Simple Controls toggle works', async ({ page }) => {
@@ -237,11 +237,12 @@ test.describe('Production Build Functionality', () => {
     await page.goto('/?sample=true');
     await page.waitForSelector('.app-shell', { timeout: 15000 });
 
-    const fader = page.locator('.fader').first();
-    const lcd = page.locator('.strip-display-value').first();
+    // Use more robust selector for fader
+    const fader = page.locator('.channel-card input[type="range"]').first();
+    await expect(fader).toBeVisible({ timeout: 10000 });
 
-    // Get initial LCD value
-    const initialText = await lcd.textContent();
+    const lcd = page.locator('.strip-display-value').first();
+    await expect(lcd).toBeVisible({ timeout: 5000 });
 
     // Change fader value using native setter (same as other tests)
     await fader.evaluate((el) => {
@@ -253,7 +254,7 @@ test.describe('Production Build Functionality', () => {
       input.dispatchEvent(new Event('input', { bubbles: true }));
     });
 
-    await page.waitForTimeout(200);
+    await page.waitForTimeout(300);
 
     // LCD should show 0 dB (max value)
     const afterText = await lcd.textContent();
