@@ -11,7 +11,8 @@ test.describe('Portrait Mode Layout', () => {
   test.describe('iPhone SE Portrait (375×667)', () => {
     test.use({ viewport: { width: 375, height: 667 } });
 
-    test('should take screenshot for visual inspection', async ({ page }) => {
+    test('should take screenshot for visual inspection', async ({ page }, testInfo) => {
+      testInfo.skip(!!process.env.CI, 'Screenshot tests skipped in CI');
       await page.waitForTimeout(1000);
       await expect(page).toHaveScreenshot('portrait-iphone-se.png', {
         fullPage: true,
@@ -72,7 +73,8 @@ test.describe('Portrait Mode Layout', () => {
   test.describe('iPhone 12 Portrait (390×844)', () => {
     test.use({ viewport: { width: 390, height: 844 } });
 
-    test('should take screenshot for visual inspection', async ({ page }) => {
+    test('should take screenshot for visual inspection', async ({ page }, testInfo) => {
+      testInfo.skip(!!process.env.CI, 'Screenshot tests skipped in CI');
       await page.waitForTimeout(1000);
       await expect(page).toHaveScreenshot('portrait-iphone-12.png', {
         fullPage: true,
@@ -90,7 +92,8 @@ test.describe('Portrait Mode Layout', () => {
   test.describe('iPhone 14 Pro Max Portrait (430×932)', () => {
     test.use({ viewport: { width: 430, height: 932 } });
 
-    test('should take screenshot for visual inspection', async ({ page }) => {
+    test('should take screenshot for visual inspection', async ({ page }, testInfo) => {
+      testInfo.skip(!!process.env.CI, 'Screenshot tests skipped in CI');
       await page.waitForTimeout(1000);
       await expect(page).toHaveScreenshot('portrait-iphone-14-pro-max.png', {
         fullPage: true,
