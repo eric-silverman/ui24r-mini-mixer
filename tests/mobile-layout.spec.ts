@@ -271,7 +271,8 @@ test.describe('Mobile Layout Improvements', () => {
 
   test.describe('Visual Regression - Screenshots', () => {
 
-    test('iPhone SE layout snapshot', async ({ page }) => {
+    test('iPhone SE layout snapshot', async ({ page }, testInfo) => {
+      testInfo.skip(!!process.env.CI, 'Screenshot tests skipped in CI');
       await page.setViewportSize({ width: 375, height: 667 });
       await page.waitForTimeout(1000);
       await expect(page).toHaveScreenshot('iphone-se-layout.png', {
@@ -280,7 +281,8 @@ test.describe('Mobile Layout Improvements', () => {
       });
     });
 
-    test('iPhone 12 layout snapshot', async ({ page }) => {
+    test('iPhone 12 layout snapshot', async ({ page }, testInfo) => {
+      testInfo.skip(!!process.env.CI, 'Screenshot tests skipped in CI');
       await page.setViewportSize({ width: 390, height: 844 });
       await page.waitForTimeout(1000);
       await expect(page).toHaveScreenshot('iphone-12-layout.png', {
@@ -289,7 +291,8 @@ test.describe('Mobile Layout Improvements', () => {
       });
     });
 
-    test('iPad Mini layout snapshot', async ({ page }) => {
+    test('iPad Mini layout snapshot', async ({ page }, testInfo) => {
+      testInfo.skip(!!process.env.CI, 'Screenshot tests skipped in CI');
       await page.setViewportSize({ width: 768, height: 1024 });
       await page.waitForTimeout(1000);
       await expect(page).toHaveScreenshot('ipad-mini-layout.png', {

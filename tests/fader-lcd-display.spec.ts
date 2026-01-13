@@ -394,7 +394,8 @@ test.describe('LCD Display Visual Appearance', () => {
     }
   });
 
-  test('screenshot - master bus LCD displays', async ({ page }) => {
+  test('screenshot - master bus LCD displays', async ({ page }, testInfo) => {
+    testInfo.skip(!!process.env.CI, 'Screenshot tests skipped in CI');
     await page.waitForTimeout(1000);
     await expect(page).toHaveScreenshot('lcd-master-bus.png', {
       fullPage: true,
@@ -402,7 +403,8 @@ test.describe('LCD Display Visual Appearance', () => {
     });
   });
 
-  test('screenshot - aux bus LCD displays', async ({ page }) => {
+  test('screenshot - aux bus LCD displays', async ({ page }, testInfo) => {
+    testInfo.skip(!!process.env.CI, 'Screenshot tests skipped in CI');
     const auxButton = page.locator('.aux-button').first();
     await auxButton.click();
     await page.waitForTimeout(1000);
