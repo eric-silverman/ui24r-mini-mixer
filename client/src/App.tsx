@@ -1050,7 +1050,7 @@ export default function App() {
     setState(current => ({
       ...current,
       channels: current.channels.map(channel =>
-        channel.id === id ? { ...channel, fader: clamped } : channel
+        channel.id === id ? { ...channel, fader: clamped, faderDb: undefined } : channel
       ),
     }));
     updateRatioForChannel(id, clamped);
@@ -1129,7 +1129,7 @@ export default function App() {
         if (nextValue === undefined) {
           return channel;
         }
-        return { ...channel, fader: nextValue };
+        return { ...channel, fader: nextValue, faderDb: undefined };
       }),
     }));
 

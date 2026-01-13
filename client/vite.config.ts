@@ -1,6 +1,7 @@
 import { execSync } from 'node:child_process';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import legacy from '@vitejs/plugin-legacy';
 
 const resolveAppVersion = () => {
   if (process.env.VITE_APP_VERSION) {
@@ -19,7 +20,14 @@ const resolveAppVersion = () => {
 const appVersion = resolveAppVersion();
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    legacy({
+      targets: ['iOS >= 12', 'safari >= 12', 'chrome >= 64', 'firefox >= 60'],
+      // Polyfills for modern features used in the app
+      additionalLegacyPolyfills: ['regenerator-runtime/runtime'],
+    }),
+  ],
   define: {
     __APP_VERSION__: JSON.stringify(appVersion),
   },

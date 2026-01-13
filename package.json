@@ -7,7 +7,11 @@
     "build": "npm run build --prefix client && npm run build --prefix server",
     "start:prod": "npm run start --prefix server",
     "prod": "npm run build && npm run start:prod",
-    "prod:setup": "npm install && npm run install:all && npm run build && ./scripts/install-post-merge-hook.sh"
+    "prod:setup": "npm install && npm run install:all && npm run build && ./scripts/install-post-merge-hook.sh",
+    "test": "./test.sh all",
+    "test:unit": "./test.sh unit",
+    "test:e2e": "./test.sh e2e",
+    "test:watch": "./test.sh watch"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
