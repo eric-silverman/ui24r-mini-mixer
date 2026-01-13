@@ -111,6 +111,13 @@ body {
   color: #7eb8da;
   border-color: rgba(126, 184, 218, 0.35);
   background: rgba(126, 184, 218, 0.12);
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.sha-badge:hover {
+  background: rgba(126, 184, 218, 0.25);
+  border-color: rgba(126, 184, 218, 0.5);
 }
 
 .brand-sub {

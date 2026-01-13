@@ -2664,9 +2664,15 @@ export default function App() {
               isDev && <span className="dev-badge">Dev</span>
             )}
             {isDemo && gitSha && (
-              <span className="dev-badge sha-badge" title={`Commit: ${gitSha}`}>
+              <a
+                className="dev-badge sha-badge"
+                href={`https://github.com/eric-silverman/ui24r-mini-mixer/commit/${gitSha}`}
+                target="_blank"
+                rel="noreferrer"
+                title={`View commit ${gitSha} on GitHub`}
+              >
                 {gitSha}
-              </span>
+              </a>
             )}
           </div>
         </div>
