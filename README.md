@@ -53,6 +53,7 @@ Then disable sample mode by clicking the status pill in the UI.
 - Server-side persistence for layout/view settings + global groups.
 - Optional sample data mode for UI testing.
 - Progressive Web App (PWA) support for "Add to Home Screen" on iOS and Android.
+- Legacy browser support (iOS 12+, Safari 12+, Chrome 64+, Firefox 60+).
 
 ## Demo Mode (Static Site)
 
@@ -382,6 +383,60 @@ UI24R_HOST=192.168.1.123 npm run test:fader
 - `POST /api/debug` body `{ "enabled": true }`
 - WebSocket at `/ws` sends full state on connect and incremental updates.
 
+## Testing
+
+The project includes a comprehensive test suite with 778 tests.
+
+### Running Tests
+
+```sh
+# Run all tests (unit + E2E)
+./test.sh all
+
+# Run only unit tests
+./test.sh unit
+
+# Run only client unit tests
+./test.sh client
+
+# Run only server unit tests
+./test.sh server
+
+# Run E2E tests
+./test.sh e2e
+
+# Run E2E tests in headed mode
+./test.sh e2e:headed
+
+# Run legacy compatibility tests
+./test.sh legacy
+
+# Run tests in watch mode
+./test.sh watch
+
+# Run with coverage
+./test.sh coverage
+
+# See all available commands
+./test.sh help
+```
+
+### Test Structure
+
+- **Client unit tests** (415 tests): `client/tests/unit/` - Components, API, WebSocket, utilities
+- **Server unit tests** (114 tests): `server/tests/` - State management, config, layout persistence
+- **E2E tests** (240 tests): `tests/` - Fader LCD display, mobile layout, portrait mode
+- **Legacy compatibility tests** (9 tests): Production build verification for older browsers
+
+### Continuous Integration
+
+GitHub Actions runs all tests automatically on every push:
+- Unit tests (client + server)
+- E2E tests (Chromium + WebKit)
+- Legacy compatibility tests
+
+See `.github/workflows/test.yml` for the CI configuration.
+
 ## Troubleshooting
 
 Can't connect:
@@ -397,6 +452,15 @@ Verify mixer state by hitting:
 curl http://localhost:3001/api/state
 ```
 
-## TODO
+## Browser Support
 
-- (empty)
+The app supports modern browsers and legacy devices:
+
+| Browser | Minimum Version |
+|---------|-----------------|
+| iOS Safari | 12+ |
+| Safari | 12+ |
+| Chrome | 64+ |
+| Firefox | 60+ |
+
+Legacy browsers receive a transpiled bundle with polyfills via `@vitejs/plugin-legacy`.

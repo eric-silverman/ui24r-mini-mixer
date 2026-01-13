@@ -25,8 +25,11 @@ Open `http://localhost:5173`
 | Mixer Protocol | `soundcraft-ui-connection` (community library) |
 | Real-time | WebSocket (bidirectional updates) |
 | Validation | Zod schemas |
-| Testing | Playwright (E2E) |
-| Deployment | Raspberry Pi + systemd + GitHub Actions |
+| Unit Testing | Vitest + Testing Library |
+| E2E Testing | Playwright (Chromium + WebKit) |
+| Legacy Support | @vitejs/plugin-legacy (iOS 12+, Safari 12+) |
+| CI/CD | GitHub Actions |
+| Deployment | Raspberry Pi + systemd |
 
 ---
 
@@ -50,11 +53,21 @@ ui24r-mini-mixer/
 │   │       ├── layout.ts           # Layout persistence
 │   │       ├── debounce.ts         # Throttle utility
 │   │       └── sampleData.ts       # Mock data for dev mode
+│   ├── tests/                       # Client unit tests (Vitest)
+│   │   ├── setup.ts                # Test setup with jest-dom
+│   │   └── unit/
+│   │       ├── ChannelStrip.test.tsx
+│   │       ├── VGroupStrip.test.tsx
+│   │       ├── ConnectionPill.test.tsx
+│   │       ├── api.test.ts
+│   │       ├── ws.test.ts
+│   │       └── ...
 │   ├── public/
 │   │   ├── manifest.json           # PWA manifest
 │   │   ├── sw.js                   # Service worker (network-first)
 │   │   └── icon-*.png              # PWA icons
-│   ├── vite.config.ts              # Vite config with dev proxy
+│   ├── vite.config.ts              # Vite config with legacy plugin
+│   ├── vitest.config.ts            # Vitest configuration
 │   └── package.json
 │
 ├── server/                          # Node.js Fastify backend
@@ -66,13 +79,23 @@ ui24r-mini-mixer/
 │   │   ├── layout.ts               # Layout persistence (LayoutStore)
 │   │   ├── ws.ts                   # WebSocket broadcast utility
 │   │   └── test-fader.ts           # Quick connectivity test
+│   ├── tests/                       # Server unit tests (Vitest)
+│   │   ├── state.test.ts
+│   │   ├── config.test.ts
+│   │   └── layout.test.ts
 │   ├── data/
 │   │   └── layout.<hostname>.json  # Per-mixer layout persistence
+│   ├── vitest.config.ts            # Vitest configuration
 │   └── package.json
 │
 ├── tests/                           # Playwright E2E tests
-│   ├── mobile-layout.spec.ts
-│   └── portrait-mode.spec.ts
+│   ├── fader-lcd-display.spec.ts   # LCD display updates
+│   ├── mobile-layout.spec.ts       # Touch targets, responsive
+│   ├── portrait-mode.spec.ts       # Portrait orientation
+│   └── legacy-compatibility.spec.ts # Production build tests
+│
+├── test.sh                          # Test runner script
+├── playwright.config.ts             # Playwright configuration
 │
 ├── scripts/
 │   ├── install-service.sh          # systemd installation
@@ -83,7 +106,8 @@ ui24r-mini-mixer/
 │       └── systemd/                # Service files
 │
 └── .github/workflows/
-    └── release.yml                 # GitHub Actions release pipeline
+    ├── release.yml                 # GitHub Actions release pipeline
+    └── test.yml                    # CI test suite (778 tests)
 ```
 
 ---
@@ -216,15 +240,27 @@ PORT=3001                   # Server port
 - **Sample Data Mode** - Automatic in dev, toggle via status pill
 - **Debug Mode** - Log raw mixer messages
 
+### Browser Support
+- **Legacy Browsers** - iOS 12+, Safari 12+, Chrome 64+, Firefox 60+
+- **Modern Browsers** - Native ES modules with optimal bundle size
+- **Auto-detection** - Serves legacy polyfills only to older browsers
+
 ---
 
 ## Commands
 
 ```bash
+# Development
 npm run dev          # Start dev server (client:5173, server:3001)
 npm run build        # Production build
 npm run start:prod   # Run production server
 npm run prod:setup   # One-command production setup
+
+# Testing
+npm test             # Run all tests (unit + E2E)
+npm run test:unit    # Run unit tests only
+npm run test:e2e     # Run E2E tests only
+npm run test:watch   # Run tests in watch mode
 npm run test:fader   # Quick mixer connectivity test
 ```
 
@@ -310,11 +346,52 @@ sudo UI24R_HOST=192.168.6.85 ./scripts/install-reverse-proxy.sh
 
 ## Testing
 
+The project includes 778 tests across unit, E2E, and legacy compatibility suites.
+
+### Test Commands
+
 ```bash
-npx playwright test                    # Run E2E tests
-npx playwright test --ui               # Interactive mode
+# All tests (recommended)
+./test.sh all                          # Run unit + E2E tests (769 tests)
+./test.sh legacy                       # Run legacy compatibility tests (9 tests)
+
+# Unit tests
+./test.sh unit                         # All unit tests (529 tests)
+./test.sh client                       # Client unit tests only (415 tests)
+./test.sh server                       # Server unit tests only (114 tests)
+./test.sh watch                        # Client tests in watch mode
+./test.sh watch:server                 # Server tests in watch mode
+./test.sh coverage                     # Client tests with coverage
+
+# E2E tests
+./test.sh e2e                          # Playwright E2E tests (240 tests)
+./test.sh e2e:headed                   # Run in visible browser
+./test.sh e2e:debug                    # Debug mode with inspector
+./test.sh e2e:ui                       # Playwright interactive UI
+./test.sh e2e:update                   # Update visual snapshots
+
+# Other
 npm run test:fader                     # Quick mixer connectivity test
 ```
+
+### Test Structure
+
+| Suite | Location | Framework | Count |
+|-------|----------|-----------|-------|
+| Client Unit | `client/tests/unit/` | Vitest + Testing Library | 415 |
+| Server Unit | `server/tests/` | Vitest | 114 |
+| E2E | `tests/*.spec.ts` | Playwright | 240 |
+| Legacy | `tests/legacy-compatibility.spec.ts` | Playwright | 9 |
+
+### CI/CD
+
+GitHub Actions (`.github/workflows/test.yml`) runs on every push:
+
+1. **Unit Tests** - Client and server unit tests
+2. **E2E Tests** - Playwright with Chromium and WebKit
+3. **Legacy Tests** - Production build verification
+
+All jobs must pass for the workflow to succeed.
 
 ---
 

@@ -50,11 +50,12 @@ Use this to view and adjust input gain.
 - **No Mute/Solo**: Gain view only changes gain.
 
 ## Simple Controls
-The **Simple Controls** button in the toolbar reduces each channel strip to quick buttons for small screens.
+The **Simple Controls** button in the toolbar adds step buttons below each fader for easier adjustments on touch screens.
 
-- **M**: Mute toggle.
-- **S**: Solo toggle (Main Mix only).
-- **+ / -**: Small fader steps.
+- **+**: Increase fader level by a fixed step (approximately 3 dB).
+- **-**: Decrease fader level by a fixed step (approximately 3 dB).
+
+This mode is especially useful on small mobile screens where precise fader dragging is difficult.
 
 ## V-Groups (Channel Organization)
 V-Groups let you group channels together and control them as a unit.
@@ -96,8 +97,35 @@ Use **Reset Layout** in the toolbar (Main Mix or Gain) to restore the default la
 - For best results, keep only one browser tab open per device.
 - Be cautious with **Gain**: it affects input levels for everyone.
 
+## Installing on Your Device (PWA)
+
+This app can be installed on your phone or tablet for a more app-like experience.
+
+### iOS (iPhone/iPad)
+1. Open the app in **Safari** (required - Chrome/Firefox don't support PWA on iOS).
+2. Tap the **Share** button (square with arrow).
+3. Scroll down and tap **Add to Home Screen**.
+4. Tap **Add**.
+
+### Android
+1. Open the app in **Chrome**.
+2. Tap the **menu** (three dots).
+3. Tap **Add to Home screen** or **Install app**.
+4. Confirm by tapping **Add** or **Install**.
+
+The app will appear on your home screen and run in fullscreen mode without browser controls.
+
+## Browser Compatibility
+
+The app works on modern and older devices:
+- iOS Safari 12+ (iPhone 5s and newer)
+- Safari 12+ (macOS)
+- Chrome 64+
+- Firefox 60+
+
 ## Troubleshooting
 
 - **Cannot connect**: Verify IP address and that you are on the same network.
 - **Buttons disabled**: Some controls only apply in certain views (e.g. Solo only in Main Mix).
 - **No audio changes**: Confirm you are adjusting the correct AUX bus or the Main Mix.
+- **App not loading on older device**: Ensure you're using a supported browser version (see Browser Compatibility above).
