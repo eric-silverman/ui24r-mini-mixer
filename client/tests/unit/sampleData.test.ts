@@ -81,12 +81,12 @@ describe('buildSampleState', () => {
         'Wedge 1',
         'Wedge 2',
         'Wedge 3',
-        'IEM 1',
-        'IEM 2',
-        'IEM 3',
+        'IEM 1 L',
+        'IEM 1 R',
+        'IEM 2 L',
+        'IEM 2 R',
         'Drummer',
         'Keys',
-        'Guitar',
         'Spare',
       ];
 
