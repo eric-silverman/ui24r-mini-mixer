@@ -43,16 +43,15 @@ test.describe('Portrait Mode Layout', () => {
       }
     });
 
-    test('mode bar should not be too tall', async ({ page }) => {
-      const modeBar = page.locator('.mode-bar');
-      const box = await modeBar.boundingBox();
+    test('top bar should be compact', async ({ page }) => {
+      const topBar = page.locator('.top-bar');
+      const box = await topBar.boundingBox();
 
       if (box) {
         const screenHeight = 667;
-        const modeBarPercent = (box.height / screenHeight) * 100;
-        // Relaxed for portrait - with 10 aux buttons, wrapping is inevitable
-        // 25% is acceptable for portrait mode navigation
-        expect(modeBarPercent).toBeLessThan(25);
+        const topBarPercent = (box.height / screenHeight) * 100;
+        // Combined toolbar should still be compact
+        expect(topBarPercent).toBeLessThan(20);
       }
     });
 

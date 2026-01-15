@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 const MINIMUM_TOUCH_TARGET = 44; // iOS/Android guideline
-const PORTRAIT_TOUCH_TARGET = 32; // Reduced for portrait mode to fit more controls
+const PORTRAIT_TOUCH_TARGET = 28; // Compact for consolidated single-row toolbar
 const MINIMUM_FONT_SIZE = 9; // Minimum readable font size for portrait mode
 const MINIMUM_FONT_SIZE_LANDSCAPE = 11; // Preferred font size for landscape
 
@@ -175,16 +175,21 @@ test.describe('Mobile Layout Improvements', () => {
       expect(flexDirection).toBe('column');
     });
 
-    test('top bar should stack vertically on tablet (900px)', async ({ page }) => {
+    test('top bar should be horizontal with wrap on tablet (900px)', async ({ page }) => {
       await page.setViewportSize({ width: 900, height: 1200 });
       await page.waitForTimeout(500);
 
       const topBar = page.locator('.top-bar');
-      const flexDirection = await topBar.evaluate((el) => {
-        return window.getComputedStyle(el).flexDirection;
+      const styles = await topBar.evaluate((el) => {
+        const computed = window.getComputedStyle(el);
+        return {
+          flexDirection: computed.flexDirection,
+          flexWrap: computed.flexWrap,
+        };
       });
 
-      expect(flexDirection).toBe('column');
+      expect(styles.flexDirection).toBe('row');
+      expect(styles.flexWrap).toBe('wrap');
     });
 
     test('app should be scrollable horizontally for channels', async ({ page }) => {

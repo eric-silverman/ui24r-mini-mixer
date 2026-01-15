@@ -2740,14 +2740,81 @@ export default function App() {
   return (
     <div className="app-shell">
       <div className="top-bar">
-        <div className="brand">
-          <span className="brand-title">Ui24R Mini</span>
-          <ConnectionPill
-            status={state.connectionStatus}
-            label={sampleMode ? 'Sample' : undefined}
-            variant={sampleMode ? 'sample' : 'default'}
-          />
-        </div>
+        <span className="brand-title">Ui24R Mini</span>
+        <select
+          className="mix-select"
+          value={
+            activeBus.type === 'master'
+              ? 'master'
+              : activeBus.type === 'gain'
+                ? 'gain'
+                : `aux-${activeBus.id}`
+          }
+          onChange={event => {
+            const value = event.target.value;
+            if (value === 'master') {
+              handleSelectMaster();
+            } else if (value === 'gain') {
+              handleSelectGain();
+            } else if (value.startsWith('aux-')) {
+              const auxId = parseInt(value.replace('aux-', ''), 10);
+              handleSelectAux(auxId);
+            }
+          }}
+        >
+          <option value="master">Main Mix</option>
+          <option value="gain">Gain</option>
+          {state.auxBuses.length > 0 && (
+            <optgroup label="AUX Sends">
+              {groupStereoAuxBuses(
+                assignedAuxId === null || showAllAuxMixes
+                  ? state.auxBuses
+                  : state.auxBuses.filter(
+                      aux =>
+                        aux.id === assignedAuxId ||
+                        (aux.name.endsWith(' L') &&
+                          state.auxBuses.find(
+                            other =>
+                              other.id === assignedAuxId && other.name === aux.name.slice(0, -2) + ' R'
+                          )) ||
+                        (aux.name.endsWith(' R') &&
+                          state.auxBuses.find(
+                            other =>
+                              other.id === assignedAuxId && other.name === aux.name.slice(0, -2) + ' L'
+                          ))
+                    )
+              ).map(item =>
+                item.type === 'mono' ? (
+                  <option key={item.aux.id} value={`aux-${item.aux.id}`}>
+                    {item.aux.name || `AUX ${item.aux.id}`}
+                  </option>
+                ) : (
+                  <option key={`stereo-${item.left.id}-${item.right.id}`} value={`aux-${item.left.id}`}>
+                    {item.name} (Stereo)
+                  </option>
+                )
+              )}
+            </optgroup>
+          )}
+        </select>
+        {assignedAuxId !== null && (
+          <button
+            className="mode-button mode-button-small"
+            type="button"
+            onClick={() => setShowAllAuxMixes(current => !current)}
+            title={showAllAuxMixes ? 'Show only your assigned AUX' : 'Show all AUX sends'}
+          >
+            {showAllAuxMixes ? 'All' : 'Mine'}
+          </button>
+        )}
+        <button
+          className={`mode-button mode-button-small ${showVGroupAdmin ? 'mode-button-active' : ''}`}
+          type="button"
+          onClick={handleToggleVGroupAdmin}
+        >
+          V-Groups
+        </button>
+        <div className="toolbar-spacer" />
         <div className="status-block">
           {!isDemo && (
             <button
@@ -2792,6 +2859,11 @@ export default function App() {
               {gitSha}
             </a>
           )}
+          <ConnectionPill
+            status={state.connectionStatus}
+            label={sampleMode ? 'Sample' : undefined}
+            variant={sampleMode ? 'sample' : 'default'}
+          />
         </div>
       </div>
       {showNotYourMix && (
@@ -2969,82 +3041,6 @@ export default function App() {
           </div>
         </div>
       )}
-
-      <div className="mode-bar">
-        <select
-          className="mix-select"
-          value={
-            activeBus.type === 'master'
-              ? 'master'
-              : activeBus.type === 'gain'
-                ? 'gain'
-                : `aux-${activeBus.id}`
-          }
-          onChange={event => {
-            const value = event.target.value;
-            if (value === 'master') {
-              handleSelectMaster();
-            } else if (value === 'gain') {
-              handleSelectGain();
-            } else if (value.startsWith('aux-')) {
-              const auxId = parseInt(value.replace('aux-', ''), 10);
-              handleSelectAux(auxId);
-            }
-          }}
-        >
-          <option value="master">Main Mix</option>
-          <option value="gain">Gain</option>
-          {state.auxBuses.length > 0 && (
-            <optgroup label="AUX Sends">
-              {groupStereoAuxBuses(
-                assignedAuxId === null || showAllAuxMixes
-                  ? state.auxBuses
-                  : state.auxBuses.filter(
-                      aux =>
-                        aux.id === assignedAuxId ||
-                        (aux.name.endsWith(' L') &&
-                          state.auxBuses.find(
-                            other =>
-                              other.id === assignedAuxId && other.name === aux.name.slice(0, -2) + ' R'
-                          )) ||
-                        (aux.name.endsWith(' R') &&
-                          state.auxBuses.find(
-                            other =>
-                              other.id === assignedAuxId && other.name === aux.name.slice(0, -2) + ' L'
-                          ))
-                    )
-              ).map(item =>
-                item.type === 'mono' ? (
-                  <option key={item.aux.id} value={`aux-${item.aux.id}`}>
-                    {item.aux.name || `AUX ${item.aux.id}`}
-                  </option>
-                ) : (
-                  <option key={`stereo-${item.left.id}-${item.right.id}`} value={`aux-${item.left.id}`}>
-                    {item.name} (Stereo)
-                  </option>
-                )
-              )}
-            </optgroup>
-          )}
-        </select>
-        {assignedAuxId !== null && (
-          <button
-            className="mode-button mode-button-small"
-            type="button"
-            onClick={() => setShowAllAuxMixes(current => !current)}
-            title={showAllAuxMixes ? 'Show only your assigned AUX' : 'Show all AUX sends'}
-          >
-            {showAllAuxMixes ? 'All' : 'Mine'}
-          </button>
-        )}
-        <button
-          className={`mode-button ${showVGroupAdmin ? 'mode-button-active' : ''}`}
-          type="button"
-          onClick={handleToggleVGroupAdmin}
-        >
-          V-Groups
-        </button>
-      </div>
 
       {showVGroupAdmin ? (
         <div className="vgroup-admin">
