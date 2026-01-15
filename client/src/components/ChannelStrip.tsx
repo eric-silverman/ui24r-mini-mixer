@@ -126,15 +126,16 @@ export default function ChannelStrip({
           >
             M
           </button>
-          <button
-            type="button"
-            className={`solo-button ${channel.solo ? 'active' : ''}`}
-            onClick={() => onSoloToggle(channel.id, !channel.solo)}
-            disabled={!soloSupported}
-            title={soloSupported ? 'Solo' : 'Solo only on Main Mix'}
-          >
-            S
-          </button>
+          {soloSupported && (
+            <button
+              type="button"
+              className={`solo-button ${channel.solo ? 'active' : ''}`}
+              onClick={() => onSoloToggle(channel.id, !channel.solo)}
+              title="Solo"
+            >
+              S
+            </button>
+          )}
         </div>
       )}
 

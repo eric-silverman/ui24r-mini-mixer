@@ -3,6 +3,7 @@ import type { DragEvent, HTMLAttributes } from 'react';
 import ChannelStrip from './components/ChannelStrip';
 import VGroupStrip from './components/VGroupStrip';
 import ConnectionPill from './components/ConnectionPill';
+import ChannelMinimap from './components/ChannelMinimap';
 import { connectMixer, fetchState, setFader, setMute, setSolo } from './lib/api';
 import { throttle } from './lib/debounce';
 import { fetchLayout, saveLayout } from './lib/layout';
@@ -498,6 +499,7 @@ export default function App() {
   } | null>(null);
   const groupRatiosRef = useRef<Record<string, Record<number, number>>>({});
   const skipRatioRef = useRef<Set<number>>(new Set());
+  const mixBoardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     activeBusRef.current = activeBus;
@@ -2812,7 +2814,7 @@ export default function App() {
           type="button"
           onClick={handleToggleVGroupAdmin}
         >
-          V-Groups
+          Global V-Groups
         </button>
         <div className="toolbar-spacer" />
         <div className="status-block">
@@ -3142,7 +3144,12 @@ export default function App() {
               </div>
             </div>
           </div>
+          <ChannelMinimap
+            channels={state.channels}
+            scrollContainerRef={mixBoardRef}
+          />
           <div
+            ref={mixBoardRef}
             className={`mix-board-row ${
               mixDropTarget?.position === 'end' ? 'mix-drop-end-active' : ''
             }`}
@@ -3216,7 +3223,12 @@ export default function App() {
               </div>
             </div>
           </div>
+          <ChannelMinimap
+            channels={state.channels}
+            scrollContainerRef={mixBoardRef}
+          />
           <div
+            ref={mixBoardRef}
             className={`mix-board-row ${
               mixDropTarget?.position === 'end' ? 'mix-drop-end-active' : ''
             }`}

@@ -1784,6 +1784,81 @@ body {
   width: 100%;
 }
 
+/* ========== CHANNEL MINIMAP ========== */
+.channel-minimap {
+  position: relative;
+  height: 32px;
+  background: linear-gradient(180deg, #1a1c22 0%, #12141a 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  margin: 0 12px 8px;
+  cursor: pointer;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.minimap-track {
+  display: flex;
+  align-items: flex-end;
+  height: 100%;
+  padding: 2px;
+  gap: 1px;
+}
+
+.minimap-fader {
+  flex: 1;
+  min-width: 2px;
+  max-width: 8px;
+  background: linear-gradient(180deg, #4bffb1 0%, #1d8055 100%);
+  border-radius: 1px;
+  transition: height 0.1s ease-out;
+}
+
+.minimap-fader-muted {
+  background: linear-gradient(180deg, #ff6b6b 0%, #8b3a3a 100%);
+  opacity: 0.6;
+}
+
+.minimap-viewport {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.12);
+  border-left: 2px solid rgba(255, 255, 255, 0.4);
+  border-right: 2px solid rgba(255, 255, 255, 0.4);
+  cursor: grab;
+  touch-action: none;
+  transition: left 0.05s ease-out;
+}
+
+.minimap-viewport:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.minimap-viewport-dragging {
+  cursor: grabbing;
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.7);
+  transition: none;
+}
+
+.minimap-dragging {
+  user-select: none;
+}
+
+.minimap-viewport::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+}
+
 [data-style="broadcast"] .channel-card {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(0, 0, 0, 0.35) 100%),
