@@ -227,7 +227,7 @@ function normalizeLayout(sections: ChannelSection[], channelIds: number[]): Chan
   if (!byId.has(OTHERS_ID)) {
     byId.set(OTHERS_ID, {
       id: OTHERS_ID,
-      name: 'Other',
+      name: 'All Channels',
       channelIds: [],
       offsetDb: 0,
       mode: 'ignore-inf',
@@ -261,19 +261,30 @@ function normalizeLayout(sections: ChannelSection[], channelIds: number[]): Chan
     section.channelIds = next;
   });
 
+  // All Channels section includes ALL channels, with favorites sorted to the front
   const favoriteIds = new Set(favorites.channelIds);
-  const remaining = channelIds.filter(id => !favoriteIds.has(id));
   const existingOthers = Array.isArray(others.channelIds) ? others.channelIds : [];
-  const nextOthers: number[] = [];
   const seen = new Set<number>();
-  existingOthers.forEach(id => {
-    if (!allowed.has(id) || favoriteIds.has(id) || seen.has(id)) {
-      return;
+  const nextOthers: number[] = [];
+
+  // First, add favorites in their current order
+  favorites.channelIds.forEach(id => {
+    if (allowed.has(id) && !seen.has(id)) {
+      seen.add(id);
+      nextOthers.push(id);
     }
-    seen.add(id);
-    nextOthers.push(id);
   });
-  remaining.forEach(id => {
+
+  // Then add existing others order (for non-favorites)
+  existingOthers.forEach(id => {
+    if (allowed.has(id) && !seen.has(id)) {
+      seen.add(id);
+      nextOthers.push(id);
+    }
+  });
+
+  // Finally add any remaining channels not yet included
+  channelIds.forEach(id => {
     if (!seen.has(id)) {
       nextOthers.push(id);
     }
@@ -2063,14 +2074,11 @@ export default function App() {
     [normalizedGlobalGroups, normalizedGlobalSettings, channelsById]
   );
   const auxGroupList = useMemo(() => {
-    const myChannels = layoutSectionsWithChannels.find(section => section.id === FAVORITES_ID);
-    const otherLocal = layoutSectionsWithChannels.filter(
+    // Exclude Favorites section - favorites are now shown at the front of All Channels
+    const localSections = layoutSectionsWithChannels.filter(
       section => section.id !== FAVORITES_ID
     );
-    if (myChannels) {
-      return [myChannels, ...globalGroupsWithChannels, ...otherLocal];
-    }
-    return [...globalGroupsWithChannels, ...otherLocal];
+    return [...globalGroupsWithChannels, ...localSections];
   }, [layoutSectionsWithChannels, globalGroupsWithChannels]);
   const favoriteIds = useMemo(() => {
     const favorites = normalizedLayout.find(section => section.id === FAVORITES_ID);
@@ -2278,10 +2286,9 @@ export default function App() {
       section.groupType === 'local' &&
       section.id !== FAVORITES_ID &&
       section.id !== OTHERS_ID;
-    const isFavorite = section.groupType === 'local' && section.id === FAVORITES_ID;
     const isOther = section.groupType === 'local' && section.id === OTHERS_ID;
     const canDragGroup = true;
-    const canAcceptDrop = !isFavorite;
+    const canAcceptDrop = true; // All visible sections can accept drops
     const isSpilled = isGroupSpilled(section.groupType, section.id);
     const isDropTarget =
       mixDropTarget?.itemType === 'group' &&
@@ -2606,24 +2613,14 @@ export default function App() {
                         },
                       }}
                     />
-                    {section.groupType === 'local' && section.id === FAVORITES_ID && (
-                      <button
-                        className="group-remove group-remove-favorite"
-                        type="button"
-                        onClick={() => handleFavoriteToggle(channel.id)}
-                        title="Remove from Favorites"
-                      >
-                        ★
-                      </button>
-                    )}
                     {section.groupType === 'local' && section.id === OTHERS_ID && (
                       <button
-                        className="group-remove group-add-favorite"
+                        className={`group-remove ${favoriteIds.has(channel.id) ? 'group-remove-favorite' : 'group-add-favorite'}`}
                         type="button"
                         onClick={() => handleFavoriteToggle(channel.id)}
-                        title="Add to Favorites"
+                        title={favoriteIds.has(channel.id) ? 'Unpin from front' : 'Pin to front'}
                       >
-                        ☆
+                        {favoriteIds.has(channel.id) ? '★' : '☆'}
                       </button>
                     )}
                     {section.groupType === 'local' &&
@@ -3117,24 +3114,25 @@ export default function App() {
                 {normalizedGlobalGroups.length > 0 && normalizedLayout.length > 0 && (
                   <span className="section-divider" aria-hidden="true" />
                 )}
-                {normalizedLayout.map(group => {
-                  const enabled = group.enabled ?? true;
-                  const isFavorite = group.id === FAVORITES_ID;
-                  const isOther = group.id === OTHERS_ID;
-                  const isLocal = !isFavorite && !isOther;
-                  return (
-                    <button
-                      key={group.id}
-                      className={`section-button ${enabled ? 'mode-button-active' : ''}`}
-                      type="button"
-                      onClick={() =>
-                        handleToggleLocalGroupForView(group.id)
-                      }
-                    >
-                      {isLocal ? `${group.name}` : group.name}
-                    </button>
-                  );
-                })}
+                {normalizedLayout
+                  .filter(group => group.id !== FAVORITES_ID) // Favorites is no longer a visible section
+                  .map(group => {
+                    const enabled = group.enabled ?? true;
+                    const isOther = group.id === OTHERS_ID;
+                    const isLocal = !isOther;
+                    return (
+                      <button
+                        key={group.id}
+                        className={`section-button ${enabled ? 'mode-button-active' : ''}`}
+                        type="button"
+                        onClick={() =>
+                          handleToggleLocalGroupForView(group.id)
+                        }
+                      >
+                        {isLocal ? `${group.name}` : group.name}
+                      </button>
+                    );
+                  })}
                 <button className="mode-button" type="button" onClick={handleAddSection}>
                   + Add V-Group
                 </button>

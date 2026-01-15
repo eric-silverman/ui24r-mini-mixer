@@ -23,23 +23,23 @@ Feedback from drummer on simplifying the UI to reduce visual clutter and improve
 
 **Goal:** The mode selection (Main Mix, Gain, AUX sends) is THE primary context. It should be a single, prominent dropdown rather than multiple button rows.
 
-## Phase 3: Channel Strip Optimization 🔄 IN PROGRESS
+## Phase 3: Channel Strip Optimization ✅ COMPLETED
 
 | Change | Status |
 |--------|--------|
 | Narrow channel strips - Tighter padding, smaller labels | ✅ Done |
 | Remove drag handles on mobile (keep on desktop) | ✅ Done |
-| Add minimap scrollbar - Birds-eye view of all channels with position indicator | Pending |
+| Add minimap scrollbar - Birds-eye view of all channels with position indicator | ✅ Done |
 
 **Goal:** Make channel strips narrower so more fit on screen. The minimap would show a zoomed-out view of all faders, helping users navigate long channel lists quickly.
 
-## Phase 4: Favorites vs V-Groups Rethink
+## Phase 4: Favorites vs V-Groups Rethink ✅ COMPLETED
 
 | Change | Status |
 |--------|--------|
-| Remove "Favorites" as a V-Group with master slider | Pending |
-| Add pin/star icon to individual channels | Pending |
-| Pinned channels appear at front of "All Channels" | Pending |
+| Remove "Favorites" as a V-Group with master slider | ✅ Done |
+| Add pin/star icon to individual channels | ✅ Done |
+| Pinned channels appear at front of "All Channels" | ✅ Done |
 
 **Goal:** Simplify the mental model. Instead of "Favorites" being a special V-Group, let users pin individual channels to the front. V-Groups remain for actual group control with master faders.
 

@@ -381,7 +381,7 @@ describe('ChannelStrip', () => {
       expect(screen.getByText('S')).toBeInTheDocument();
     });
 
-    it('disables solo button on aux bus', () => {
+    it('hides solo button on aux bus', () => {
       const channel = createMockChannel({
         busType: 'aux',
         bus: 1,
@@ -397,9 +397,8 @@ describe('ChannelStrip', () => {
         />
       );
 
-      // Solo button is shown but disabled on aux bus
-      const soloButton = screen.getByText('S');
-      expect(soloButton).toBeDisabled();
+      // Solo button is hidden on aux bus (not just disabled)
+      expect(screen.queryByText('S')).not.toBeInTheDocument();
     });
 
     it('calls onSoloToggle when clicked', () => {
@@ -481,9 +480,8 @@ describe('ChannelStrip', () => {
       // Mute should still be visible
       expect(screen.getByText('M')).toBeInTheDocument();
 
-      // Solo button is shown but disabled on aux
-      const soloButton = screen.getByText('S');
-      expect(soloButton).toBeDisabled();
+      // Solo button is hidden on aux (not just disabled)
+      expect(screen.queryByText('S')).not.toBeInTheDocument();
     });
   });
 
