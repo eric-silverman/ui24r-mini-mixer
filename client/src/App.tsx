@@ -567,6 +567,19 @@ export default function App() {
       if (!sampleModeInitializedRef.current) {
         setState(buildSampleState(activeBus.type, activeBus.id));
         sampleModeInitializedRef.current = true;
+      } else {
+        // Update busType on channels when switching buses in sample mode
+        setState(current => ({
+          ...current,
+          bus: { type: activeBus.type, id: activeBus.id },
+          channels: current.channels.map(channel => ({
+            ...channel,
+            busType: activeBus.type,
+            bus: activeBus.id,
+            // Solo is only supported on master bus
+            solo: activeBus.type === 'master' ? channel.solo : undefined,
+          })),
+        }));
       }
       return;
     }
