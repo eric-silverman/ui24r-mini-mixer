@@ -2753,6 +2753,64 @@ export default function App() {
     <div className="app-shell">
       <div className="top-bar">
         <span className="brand-title">Ui24R Mini</span>
+        <div className="status-block">
+          {!isDemo && (
+            <button
+              className="icon-button"
+              type="button"
+              onClick={() => setShowConnect(value => !value)}
+              title="Connect to mixer"
+            >
+              <span className="icon-button-icon">⚡</span>
+            </button>
+          )}
+          {mixerUrl && (
+            <a
+              className="icon-button"
+              href={mixerUrl}
+              target="_blank"
+              rel="noreferrer"
+              title="Open full Ui24R interface"
+            >
+              <span className="icon-button-icon">↗</span>
+            </a>
+          )}
+          <button
+            className="icon-button"
+            type="button"
+            onClick={() => setShowHelp(true)}
+            title="Help"
+          >
+            <span className="icon-button-icon">?</span>
+          </button>
+          {isDev && (
+            <span className="dev-badge">{versionLabel || 'Dev'}</span>
+          )}
+          {isDemo && gitSha && (
+            <a
+              className="dev-badge sha-badge"
+              href={`https://github.com/eric-silverman/ui24r-mini-mixer/commit/${gitSha}`}
+              target="_blank"
+              rel="noreferrer"
+              title={`View commit ${gitSha} on GitHub`}
+            >
+              {gitSha}
+            </a>
+          )}
+          <ConnectionPill
+            status={state.connectionStatus}
+            label={sampleMode ? 'Sample' : undefined}
+            variant={sampleMode ? 'sample' : 'default'}
+          />
+        </div>
+        <div className="toolbar-spacer" />
+        <button
+          className={`mode-button mode-button-small ${showVGroupAdmin ? 'mode-button-active' : ''}`}
+          type="button"
+          onClick={handleToggleVGroupAdmin}
+        >
+          Global V-Groups
+        </button>
         <select
           className="mix-select"
           value={
@@ -2819,64 +2877,6 @@ export default function App() {
             {showAllAuxMixes ? 'All' : 'Mine'}
           </button>
         )}
-        <button
-          className={`mode-button mode-button-small ${showVGroupAdmin ? 'mode-button-active' : ''}`}
-          type="button"
-          onClick={handleToggleVGroupAdmin}
-        >
-          Global V-Groups
-        </button>
-        <div className="toolbar-spacer" />
-        <div className="status-block">
-          {!isDemo && (
-            <button
-              className="icon-button"
-              type="button"
-              onClick={() => setShowConnect(value => !value)}
-              title="Connect to mixer"
-            >
-              <span className="icon-button-icon">⚡</span>
-            </button>
-          )}
-          {mixerUrl && (
-            <a
-              className="icon-button"
-              href={mixerUrl}
-              target="_blank"
-              rel="noreferrer"
-              title="Open full Ui24R interface"
-            >
-              <span className="icon-button-icon">↗</span>
-            </a>
-          )}
-          <button
-            className="icon-button"
-            type="button"
-            onClick={() => setShowHelp(true)}
-            title="Help"
-          >
-            <span className="icon-button-icon">?</span>
-          </button>
-          {isDev && (
-            <span className="dev-badge">{versionLabel || 'Dev'}</span>
-          )}
-          {isDemo && gitSha && (
-            <a
-              className="dev-badge sha-badge"
-              href={`https://github.com/eric-silverman/ui24r-mini-mixer/commit/${gitSha}`}
-              target="_blank"
-              rel="noreferrer"
-              title={`View commit ${gitSha} on GitHub`}
-            >
-              {gitSha}
-            </a>
-          )}
-          <ConnectionPill
-            status={state.connectionStatus}
-            label={sampleMode ? 'Sample' : undefined}
-            variant={sampleMode ? 'sample' : 'default'}
-          />
-        </div>
       </div>
       {showNotYourMix && (
         <div className="not-your-mix-banner">
