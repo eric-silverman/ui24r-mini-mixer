@@ -31,16 +31,14 @@ test.describe('Mobile Layout Improvements', () => {
       }
     });
 
-    test('aux buttons should meet portrait minimum', async ({ page }) => {
-      const buttons = await page.locator('.aux-button').all();
+    test('mix select dropdown should meet portrait minimum', async ({ page }) => {
+      const mixSelect = page.locator('.mix-select');
 
-      if (buttons.length > 0) {
-        for (const button of buttons) {
-          const box = await button.boundingBox();
-          if (box) {
-            expect(box.height, `Aux button height should be >= ${PORTRAIT_TOUCH_TARGET}px`).toBeGreaterThanOrEqual(PORTRAIT_TOUCH_TARGET);
-            expect(box.width, 'Aux button width should be >= 30px').toBeGreaterThanOrEqual(30);
-          }
+      if (await mixSelect.count() > 0) {
+        const box = await mixSelect.boundingBox();
+        if (box) {
+          expect(box.height, `Mix select height should be >= ${PORTRAIT_TOUCH_TARGET}px`).toBeGreaterThanOrEqual(PORTRAIT_TOUCH_TARGET);
+          expect(box.width, 'Mix select width should be >= 100px').toBeGreaterThanOrEqual(100);
         }
       }
     });
@@ -242,14 +240,14 @@ test.describe('Mobile Layout Improvements', () => {
     test.use({ viewport: { width: 375, height: 667 } });
 
     test('buttons should have adequate spacing between them', async ({ page }) => {
-      const toolbar = page.locator('.aux-bar').first();
+      const toolbar = page.locator('.mode-bar').first();
 
       if (await toolbar.isVisible()) {
         const gap = await toolbar.evaluate((el) => {
           return window.getComputedStyle(el).gap;
         });
 
-        // Portrait mode uses tighter spacing (4px) to fit more buttons
+        // Mode bar uses spacing for controls
         const gapValue = parseFloat(gap);
         expect(gapValue).toBeGreaterThanOrEqual(4);
       }

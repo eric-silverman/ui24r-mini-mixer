@@ -401,8 +401,11 @@ function removeChannelFromSection(
 export default function App() {
   const isDev = import.meta.env.DEV;
   const isDemo = import.meta.env.VITE_DEMO === 'true';
-  // Automatically use sample data in dev builds or when VITE_DEMO=true
-  const shouldUseSampleData = isDev || isDemo;
+  // Use sample data when VITE_DEMO=true or when ?sample=true URL parameter is present
+  // This allows demo mode in any build without loading sample data by default in dev
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlSampleMode = urlParams.get('sample') === 'true' || urlParams.get('demo') === 'true';
+  const shouldUseSampleData = isDemo || urlSampleMode;
   const appVersion = __APP_VERSION__.trim();
   const gitSha = __GIT_SHA__.trim();
   const versionLabel = appVersion
@@ -429,6 +432,7 @@ export default function App() {
   const [localGroupSelection, setLocalGroupSelection] = useState<Set<number>>(new Set());
   const [connectError, setConnectError] = useState('');
   const [sampleMode, setSampleMode] = useState(shouldUseSampleData);
+  const sampleModeInitializedRef = useRef(false);
   const [assignedAuxId, setAssignedAuxId] = useState<number | null>(() => {
     const stored = localStorage.getItem(ASSIGNED_AUX_KEY);
     if (!stored) {
@@ -546,7 +550,11 @@ export default function App() {
 
   useEffect(() => {
     if (sampleMode) {
-      setState(buildSampleState(activeBus.type, activeBus.id));
+      // Only build sample state once initially, then let user changes persist
+      if (!sampleModeInitializedRef.current) {
+        setState(buildSampleState(activeBus.type, activeBus.id));
+        sampleModeInitializedRef.current = true;
+      }
       return;
     }
     fetchState(activeBus.type, activeBus.id)
@@ -2733,63 +2741,57 @@ export default function App() {
     <div className="app-shell">
       <div className="top-bar">
         <div className="brand">
-          <div className="brand-row">
-            <div className="brand-title">Ui24R Mini Mixer</div>
-            {versionLabel ? (
-              <span className="dev-badge">{versionLabel}</span>
-            ) : (
-              isDev && <span className="dev-badge">Dev</span>
-            )}
-            {isDemo && gitSha && (
-              <a
-                className="dev-badge sha-badge"
-                href={`https://github.com/eric-silverman/ui24r-mini-mixer/commit/${gitSha}`}
-                target="_blank"
-                rel="noreferrer"
-                title={`View commit ${gitSha} on GitHub`}
-              >
-                {gitSha}
-              </a>
-            )}
-          </div>
-        </div>
-        <div className="status-block">
-          <a
-            className={`mode-button ${mixerUrl ? '' : 'mode-button-disabled'}`}
-            href={mixerUrl || '#'}
-            target="_blank"
-            rel="noreferrer"
-            onClick={event => {
-              if (!mixerUrl) {
-                event.preventDefault();
-              }
-            }}
-            title={mixerUrl ? 'Open full UI24R interface' : 'Connect to a mixer first'}
-          >
-            Ui24R Full Interface
-          </a>
-          <button
-            className={`mode-button ${isDemo ? 'mode-button-disabled' : ''}`}
-            type="button"
-            onClick={() => setShowConnect(value => !value)}
-            disabled={isDemo}
-            title={isDemo ? 'Demo mode uses sample data only' : undefined}
-          >
-            Connect
-          </button>
-          <button className="mode-button" type="button" onClick={() => setShowHelp(true)}>
-            Help
-          </button>
-          {state.connectionStatus === 'disconnected' && !sampleMode && (
-            <button className="mode-button" type="button" onClick={handleLoadSampleData}>
-              Load Sample Data
-            </button>
-          )}
+          <span className="brand-title">Ui24R Mini</span>
           <ConnectionPill
             status={state.connectionStatus}
-            label={sampleMode ? 'Sample Data' : undefined}
+            label={sampleMode ? 'Sample' : undefined}
             variant={sampleMode ? 'sample' : 'default'}
           />
+        </div>
+        <div className="status-block">
+          {!isDemo && (
+            <button
+              className="icon-button"
+              type="button"
+              onClick={() => setShowConnect(value => !value)}
+              title="Connect to mixer"
+            >
+              <span className="icon-button-icon">⚡</span>
+            </button>
+          )}
+          {mixerUrl && (
+            <a
+              className="icon-button"
+              href={mixerUrl}
+              target="_blank"
+              rel="noreferrer"
+              title="Open full Ui24R interface"
+            >
+              <span className="icon-button-icon">↗</span>
+            </a>
+          )}
+          <button
+            className="icon-button"
+            type="button"
+            onClick={() => setShowHelp(true)}
+            title="Help"
+          >
+            <span className="icon-button-icon">?</span>
+          </button>
+          {isDev && (
+            <span className="dev-badge">{versionLabel || 'Dev'}</span>
+          )}
+          {isDemo && gitSha && (
+            <a
+              className="dev-badge sha-badge"
+              href={`https://github.com/eric-silverman/ui24r-mini-mixer/commit/${gitSha}`}
+              target="_blank"
+              rel="noreferrer"
+              title={`View commit ${gitSha} on GitHub`}
+            >
+              {gitSha}
+            </a>
+          )}
         </div>
       </div>
       {showNotYourMix && (
@@ -2969,20 +2971,72 @@ export default function App() {
       )}
 
       <div className="mode-bar">
-        <button
-          className={`mode-button ${activeBus.type === 'master' ? 'mode-button-active' : ''}`}
-          type="button"
-          onClick={handleSelectMaster}
+        <select
+          className="mix-select"
+          value={
+            activeBus.type === 'master'
+              ? 'master'
+              : activeBus.type === 'gain'
+                ? 'gain'
+                : `aux-${activeBus.id}`
+          }
+          onChange={event => {
+            const value = event.target.value;
+            if (value === 'master') {
+              handleSelectMaster();
+            } else if (value === 'gain') {
+              handleSelectGain();
+            } else if (value.startsWith('aux-')) {
+              const auxId = parseInt(value.replace('aux-', ''), 10);
+              handleSelectAux(auxId);
+            }
+          }}
         >
-          Main Mix
-        </button>
-        <button
-          className={`mode-button ${activeBus.type === 'gain' ? 'mode-button-active' : ''}`}
-          type="button"
-          onClick={handleSelectGain}
-        >
-          Gain
-        </button>
+          <option value="master">Main Mix</option>
+          <option value="gain">Gain</option>
+          {state.auxBuses.length > 0 && (
+            <optgroup label="AUX Sends">
+              {groupStereoAuxBuses(
+                assignedAuxId === null || showAllAuxMixes
+                  ? state.auxBuses
+                  : state.auxBuses.filter(
+                      aux =>
+                        aux.id === assignedAuxId ||
+                        (aux.name.endsWith(' L') &&
+                          state.auxBuses.find(
+                            other =>
+                              other.id === assignedAuxId && other.name === aux.name.slice(0, -2) + ' R'
+                          )) ||
+                        (aux.name.endsWith(' R') &&
+                          state.auxBuses.find(
+                            other =>
+                              other.id === assignedAuxId && other.name === aux.name.slice(0, -2) + ' L'
+                          ))
+                    )
+              ).map(item =>
+                item.type === 'mono' ? (
+                  <option key={item.aux.id} value={`aux-${item.aux.id}`}>
+                    {item.aux.name || `AUX ${item.aux.id}`}
+                  </option>
+                ) : (
+                  <option key={`stereo-${item.left.id}-${item.right.id}`} value={`aux-${item.left.id}`}>
+                    {item.name} (Stereo)
+                  </option>
+                )
+              )}
+            </optgroup>
+          )}
+        </select>
+        {assignedAuxId !== null && (
+          <button
+            className="mode-button mode-button-small"
+            type="button"
+            onClick={() => setShowAllAuxMixes(current => !current)}
+            title={showAllAuxMixes ? 'Show only your assigned AUX' : 'Show all AUX sends'}
+          >
+            {showAllAuxMixes ? 'All' : 'Mine'}
+          </button>
+        )}
         <button
           className={`mode-button ${showVGroupAdmin ? 'mode-button-active' : ''}`}
           type="button"
@@ -2990,63 +3044,6 @@ export default function App() {
         >
           V-Groups
         </button>
-        <div className="mode-divider">AUX SENDS</div>
-        {assignedAuxId !== null && (
-          <button
-            className="mode-button"
-            type="button"
-            onClick={() => setShowAllAuxMixes(current => !current)}
-          >
-            {showAllAuxMixes ? 'Show Assigned' : 'Show All'}
-          </button>
-        )}
-        <div className="aux-bar">
-          {groupStereoAuxBuses(
-            state.auxBuses.filter(aux =>
-              assignedAuxId === null || showAllAuxMixes
-                ? true
-                : aux.id === assignedAuxId ||
-                  // Include both L/R if either is assigned
-                  (aux.name.endsWith(' L') &&
-                    state.auxBuses.find(
-                      other => other.id === assignedAuxId && other.name === aux.name.slice(0, -2) + ' R'
-                    )) ||
-                  (aux.name.endsWith(' R') &&
-                    state.auxBuses.find(
-                      other => other.id === assignedAuxId && other.name === aux.name.slice(0, -2) + ' L'
-                    ))
-            )
-          ).map(item =>
-            item.type === 'mono' ? (
-              <button
-                key={item.aux.id}
-                className={`aux-button ${
-                  activeBus.type === 'aux' && activeBus.id === item.aux.id ? 'aux-button-active' : ''
-                }`}
-                type="button"
-                onClick={() => handleSelectAux(item.aux.id)}
-              >
-                {item.aux.name || `AUX ${item.aux.id}`}
-              </button>
-            ) : (
-              <button
-                key={`stereo-${item.left.id}-${item.right.id}`}
-                className={`aux-button aux-button-stereo ${
-                  activeBus.type === 'aux' &&
-                  (activeBus.id === item.left.id || activeBus.id === item.right.id)
-                    ? 'aux-button-active'
-                    : ''
-                }`}
-                type="button"
-                onClick={() => handleSelectAux(item.left.id)}
-                title={`Stereo: ${item.left.name} + ${item.right.name}`}
-              >
-                <span className="aux-stereo-name">{item.name}</span>
-                <span className="aux-stereo-badge">ST</span>
-              </button>
-            )
-          )}
-        </div>
       </div>
 
       {showVGroupAdmin ? (
