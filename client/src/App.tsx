@@ -2153,6 +2153,28 @@ export default function App() {
     return items;
   }, [activeBus.type, activeViewSettings.mixOrder, auxGroupList, globalGroupsWithChannels, state.channels]);
 
+  // Flatten mixRowItems to get channels in display order for the minimap
+  const minimapChannels = useMemo(() => {
+    const channels: ChannelState[] = [];
+    const seen = new Set<number>();
+    mixRowItems.forEach(item => {
+      if (item.kind === 'channel') {
+        if (!seen.has(item.channel.id)) {
+          seen.add(item.channel.id);
+          channels.push(item.channel);
+        }
+      } else if (item.kind === 'group') {
+        item.group.channels.forEach(channel => {
+          if (!seen.has(channel.id)) {
+            seen.add(channel.id);
+            channels.push(channel);
+          }
+        });
+      }
+    });
+    return channels;
+  }, [mixRowItems]);
+
   const renderVGroupStrip = (
     title: string,
     value: number,
@@ -3156,7 +3178,7 @@ export default function App() {
             </div>
           </div>
           <ChannelMinimap
-            channels={state.channels}
+            channels={minimapChannels}
             scrollContainerRef={mixBoardRef}
           />
           <div
@@ -3235,7 +3257,7 @@ export default function App() {
             </div>
           </div>
           <ChannelMinimap
-            channels={state.channels}
+            channels={minimapChannels}
             scrollContainerRef={mixBoardRef}
           />
           <div
