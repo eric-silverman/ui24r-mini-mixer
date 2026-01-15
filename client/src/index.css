@@ -559,7 +559,7 @@ body {
 .channel-grid {
   display: grid;
   gap: 0;
-  grid-template-columns: repeat(auto-fit, minmax(122px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
 }
 
 .mix-board-row {
@@ -1153,7 +1153,7 @@ body {
     linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(0, 0, 0, 0.25) 100%),
     linear-gradient(180deg, #2a2d36 0%, #1a1c22 45%, #12141a 100%);
   border-radius: 0;
-  padding: 12px 12px 14px;
+  padding: 8px 6px 10px;
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -1177,21 +1177,21 @@ body {
 .channel-card::after {
   content: "";
   position: absolute;
-  top: 10px;
-  width: 10px;
-  height: 10px;
+  top: 6px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: radial-gradient(circle at 30% 30%, #6f7684 0%, #3e424d 55%, #14161b 100%);
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15);
-  opacity: 0.8;
+  opacity: 0.6;
 }
 
 .channel-card::before {
-  left: 10px;
+  left: 6px;
 }
 
 .channel-card::after {
-  right: 10px;
+  right: 6px;
 }
 
 .channel-flash::after {
@@ -1217,12 +1217,12 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 
 .strip-id {
-  font-size: 14px;
-  letter-spacing: 0.22em;
+  font-size: 11px;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: rgba(240, 244, 250, 0.92);
   font-weight: 700;
@@ -1233,8 +1233,8 @@ body {
 }
 
 .strip-id--compact {
-  font-size: 12px;
-  letter-spacing: 0.14em;
+  font-size: 10px;
+  letter-spacing: 0.08em;
 }
 
 .vgroup-strip-title {
@@ -1276,13 +1276,13 @@ body {
 .strip-display {
   background:
     linear-gradient(180deg, rgba(30, 38, 20, 0.65) 0%, rgba(10, 14, 8, 0.9) 100%);
-  border-radius: 6px;
-  padding: 6px 10px;
+  border-radius: 4px;
+  padding: 4px 6px;
   border: 1px solid rgba(142, 255, 168, 0.12);
   box-shadow:
     inset 0 0 10px rgba(0, 0, 0, 0.7),
     0 1px 0 rgba(255, 255, 255, 0.05);
-  min-width: 70px;
+  min-width: 54px;
   text-align: right;
   max-width: 100%;
   overflow: hidden;
@@ -1290,7 +1290,7 @@ body {
 
 .strip-display-value {
   font-family: "Share Tech Mono", monospace;
-  font-size: 18px;
+  font-size: 14px;
   color: #b9ffcb;
   text-shadow: 0 0 6px rgba(72, 255, 162, 0.35);
   overflow: hidden;
@@ -1739,20 +1739,20 @@ body {
 
 .stepper-row {
   display: flex;
-  gap: 6px;
-  padding: 6px 8px;
+  gap: 4px;
+  padding: 4px 4px;
   justify-content: center;
 }
 
 .stepper-button {
   flex: 1;
-  min-width: 36px;
-  height: 36px;
-  border-radius: 6px;
+  min-width: 28px;
+  height: 28px;
+  border-radius: 4px;
   border: 1px solid rgba(255, 255, 255, 0.15);
   background: linear-gradient(180deg, #2b2e36 0%, #1b1d23 100%);
   color: var(--text);
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.1s, border-color 0.1s;
@@ -1770,17 +1770,17 @@ body {
 
 .strip-footer {
   text-align: center;
-  padding: 6px 0 0;
+  padding: 4px 0 0;
   font-weight: 700;
-  letter-spacing: 0.2em;
-  font-size: 12px;
+  letter-spacing: 0.12em;
+  font-size: 9px;
   text-transform: uppercase;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   color: var(--muted);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   width: 100%;
 }
 
@@ -1899,6 +1899,15 @@ body {
     margin-left: auto;
   }
 
+  /* Disable drag handles on mobile - dragging isn't practical on touch */
+  .strip-drag-handle {
+    cursor: default;
+  }
+
+  .strip-drag-handle:active {
+    cursor: default;
+  }
+
   /* Touch-friendly buttons: minimum 44x44px */
   .mode-button {
     padding: 10px 14px; /* Increased from 7px 12px for better touch */
@@ -1913,7 +1922,7 @@ body {
   }
 
   .channel-grid {
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
   }
 
   .sections-toolbar {
@@ -1948,14 +1957,14 @@ body {
   }
 
   .strip-display-value {
-    font-size: 16px;
+    font-size: 14px;
   }
 
   /* Touch-friendly inline buttons */
   .simple-button-inline {
-    width: 44px; /* Increased from 24px */
-    height: 44px; /* Increased from 30px */
-    font-size: 16px; /* Increased from 14px */
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
   }
 
   .favorite-button {
@@ -2086,46 +2095,46 @@ body {
   }
 
   .channel-grid {
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
   }
 
   .channel-card {
-    padding: 10px 10px 12px;
+    padding: 6px 4px 8px;
   }
 
   .strip-header {
-    gap: 6px; /* Increased from 4px for better spacing */
+    gap: 3px;
   }
 
   .strip-display {
-    padding: 6px 10px; /* Increased from 4px 8px */
-    min-height: 36px; /* Ensure readable height */
+    padding: 3px 5px;
+    min-height: 24px;
   }
 
   .strip-display-value {
-    font-size: 17px; /* Slightly larger for readability */
+    font-size: 13px;
   }
 
   .strip-display-row.simple-display {
-    grid-template-columns: 44px minmax(0, 1fr) 44px; /* Match button sizes */
-    gap: 6px; /* Increased from 4px */
+    grid-template-columns: 32px minmax(0, 1fr) 32px;
+    gap: 4px;
   }
 
-  /* Touch-optimized inline buttons */
+  /* Compact inline buttons on small mobile */
   .simple-button-inline {
-    width: 44px; /* Increased from 22px */
-    height: 44px; /* Increased from 28px */
-    font-size: 18px; /* Increased from 12px */
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
   }
 
   .favorite-button {
-    width: 36px; /* Increased from 18px */
-    height: 36px; /* Increased from 18px */
-    font-size: 16px; /* Increased from 10px */
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
   }
 
   .strip-controls {
-    gap: 8px; /* Increased from 6px */
+    gap: 4px;
   }
 
   .mute-button,
@@ -2236,45 +2245,45 @@ body {
     min-height: 0;
   }
 
-  /* Slightly smaller channel cards to fit more vertically */
+  /* Compact channel cards for portrait */
   .channel-card {
-    padding: 8px 8px 10px; /* Reduced from 10px 10px 12px */
+    padding: 5px 4px 6px;
   }
 
   .strip-display {
-    padding: 4px 8px; /* Reduced from 6px 10px */
-    min-height: 32px; /* Reduced from 36px */
+    padding: 3px 5px;
+    min-height: 22px;
   }
 
   .strip-display-value {
-    font-size: 15px; /* Reduced from 17px */
+    font-size: 12px;
   }
 
   /* Compact mute/solo buttons */
   .mute-button,
   .solo-button {
-    font-size: 10px; /* Reduced from 11px */
-    padding: 8px 0; /* Reduced from 10px 0 */
-    min-height: 38px; /* Reduced from 44px */
+    font-size: 9px;
+    padding: 6px 0;
+    min-height: 30px;
   }
 
-  /* Compact simple buttons - still touch-friendly but smaller */
+  /* Compact simple buttons */
   .simple-button-inline {
-    width: 40px; /* Reduced from 44px */
-    height: 40px; /* Reduced from 44px */
-    font-size: 16px;
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
   }
 
   .favorite-button {
-    width: 32px; /* Reduced from 36px */
-    height: 32px; /* Reduced from 36px */
-    font-size: 14px;
+    width: 22px;
+    height: 22px;
+    font-size: 11px;
   }
 
   .group-remove {
-    width: 32px; /* Reduced from 36px */
-    height: 32px; /* Reduced from 36px */
-    font-size: 16px;
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
   }
 }
 

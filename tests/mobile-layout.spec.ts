@@ -81,8 +81,8 @@ test.describe('Mobile Layout Improvements', () => {
         for (const button of allButtons) {
           const box = await button.boundingBox();
           if (box) {
-            // Portrait mute/solo buttons are slightly larger (38px)
-            expect(box.height, 'Mute/Solo button height should be >= 38px').toBeGreaterThanOrEqual(38);
+            // Compact mute/solo buttons for narrower strips
+            expect(box.height, `Mute/Solo button height should be >= ${PORTRAIT_TOUCH_TARGET}px`).toBeGreaterThanOrEqual(PORTRAIT_TOUCH_TARGET);
           }
         }
       }
@@ -147,8 +147,8 @@ test.describe('Mobile Layout Improvements', () => {
           return parseFloat(window.getComputedStyle(el).fontSize);
         });
 
-        // Display values should remain readable even in portrait
-        expect(fontSize, 'Display value font should be >= 14px').toBeGreaterThanOrEqual(14);
+        // Display values use compact font but remain readable
+        expect(fontSize, 'Display value font should be >= 12px').toBeGreaterThanOrEqual(12);
       }
     });
   });

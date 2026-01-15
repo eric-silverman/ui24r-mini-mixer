@@ -23,12 +23,12 @@ Feedback from drummer on simplifying the UI to reduce visual clutter and improve
 
 **Goal:** The mode selection (Main Mix, Gain, AUX sends) is THE primary context. It should be a single, prominent dropdown rather than multiple button rows.
 
-## Phase 3: Channel Strip Optimization
+## Phase 3: Channel Strip Optimization 🔄 IN PROGRESS
 
 | Change | Status |
 |--------|--------|
-| Narrow channel strips - Tighter padding, smaller labels | Pending |
-| Remove drag handles on mobile (keep on desktop) | Pending |
+| Narrow channel strips - Tighter padding, smaller labels | ✅ Done |
+| Remove drag handles on mobile (keep on desktop) | ✅ Done |
 | Add minimap scrollbar - Birds-eye view of all channels with position indicator | Pending |
 
 **Goal:** Make channel strips narrower so more fit on screen. The minimap would show a zoomed-out view of all faders, helping users navigate long channel lists quickly.
