@@ -7,10 +7,51 @@ export type LayoutPayload = {
   viewSettings?: ViewSettings;
 };
 
-export async function fetchLayout(
+const DEMO_STORAGE_PREFIX = 'ui24r-demo-layout';
+
+function getDemoStorageKey(busType: 'master' | 'aux' | 'gain', busId?: number): string {
+  if (busType === 'aux') {
+    return `${DEMO_STORAGE_PREFIX}-aux-${busId ?? 1}`;
+  }
+  return `${DEMO_STORAGE_PREFIX}-${busType}`;
+}
+
+function fetchLayoutFromLocalStorage(
   busType: 'master' | 'aux' | 'gain',
   busId?: number
+): LayoutPayload {
+  const key = getDemoStorageKey(busType, busId);
+  const stored = localStorage.getItem(key);
+  if (stored) {
+    try {
+      return JSON.parse(stored) as LayoutPayload;
+    } catch {
+      return {};
+    }
+  }
+  return {};
+}
+
+function saveLayoutToLocalStorage(
+  busType: 'master' | 'aux' | 'gain',
+  busId: number | undefined,
+  payload: LayoutPayload
+): void {
+  const key = getDemoStorageKey(busType, busId);
+  const existing = fetchLayoutFromLocalStorage(busType, busId);
+  const merged = { ...existing, ...payload };
+  localStorage.setItem(key, JSON.stringify(merged));
+}
+
+export async function fetchLayout(
+  busType: 'master' | 'aux' | 'gain',
+  busId?: number,
+  demoMode = false
 ): Promise<LayoutPayload> {
+  if (demoMode) {
+    return fetchLayoutFromLocalStorage(busType, busId);
+  }
+
   const params =
     busType === 'aux'
       ? `?bus=aux&busId=${encodeURIComponent(busId ?? 1)}`
@@ -27,8 +68,14 @@ export async function fetchLayout(
 export async function saveLayout(
   busType: 'master' | 'aux' | 'gain',
   busId: number | undefined,
-  payload: LayoutPayload
+  payload: LayoutPayload,
+  demoMode = false
 ) {
+  if (demoMode) {
+    saveLayoutToLocalStorage(busType, busId, payload);
+    return;
+  }
+
   const params =
     busType === 'aux'
       ? `?bus=aux&busId=${encodeURIComponent(busId ?? 1)}`

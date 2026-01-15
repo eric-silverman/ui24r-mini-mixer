@@ -361,6 +361,177 @@ describe('saveLayout', () => {
   });
 });
 
+describe('demo mode (localStorage)', () => {
+  const mockLocalStorage: Record<string, string> = {};
+  const localStorageMock = {
+    getItem: vi.fn((key: string) => mockLocalStorage[key] ?? null),
+    setItem: vi.fn((key: string, value: string) => {
+      mockLocalStorage[key] = value;
+    }),
+    removeItem: vi.fn((key: string) => {
+      delete mockLocalStorage[key];
+    }),
+    clear: vi.fn(() => {
+      Object.keys(mockLocalStorage).forEach(key => delete mockLocalStorage[key]);
+    }),
+  };
+
+  beforeEach(() => {
+    mockFetch.mockReset();
+    localStorageMock.clear();
+    Object.defineProperty(window, 'localStorage', {
+      value: localStorageMock,
+      writable: true,
+    });
+  });
+
+  describe('fetchLayout with demoMode=true', () => {
+    it('reads from localStorage instead of API for master bus', async () => {
+      const storedPayload = { globalGroups: [{ id: 'test', name: 'Test', channelIds: [1] }] };
+      mockLocalStorage['ui24r-demo-layout-master'] = JSON.stringify(storedPayload);
+
+      const result = await fetchLayout('master', undefined, true);
+
+      expect(mockFetch).not.toHaveBeenCalled();
+      expect(result).toEqual(storedPayload);
+    });
+
+    it('reads from localStorage for aux bus with correct key', async () => {
+      const storedPayload = { sections: [{ id: 'sec1', name: 'Section', channelIds: [2] }] };
+      mockLocalStorage['ui24r-demo-layout-aux-3'] = JSON.stringify(storedPayload);
+
+      const result = await fetchLayout('aux', 3, true);
+
+      expect(mockFetch).not.toHaveBeenCalled();
+      expect(result).toEqual(storedPayload);
+    });
+
+    it('reads from localStorage for gain bus', async () => {
+      const storedPayload = { viewSettings: { offsetDb: 5 } };
+      mockLocalStorage['ui24r-demo-layout-gain'] = JSON.stringify(storedPayload);
+
+      const result = await fetchLayout('gain', undefined, true);
+
+      expect(mockFetch).not.toHaveBeenCalled();
+      expect(result).toEqual(storedPayload);
+    });
+
+    it('returns empty object when no stored data', async () => {
+      const result = await fetchLayout('master', undefined, true);
+
+      expect(mockFetch).not.toHaveBeenCalled();
+      expect(result).toEqual({});
+    });
+
+    it('returns empty object on invalid JSON', async () => {
+      mockLocalStorage['ui24r-demo-layout-master'] = 'invalid json';
+
+      const result = await fetchLayout('master', undefined, true);
+
+      expect(result).toEqual({});
+    });
+
+    it('defaults aux busId to 1 in storage key', async () => {
+      const storedPayload = { sections: [] };
+      mockLocalStorage['ui24r-demo-layout-aux-1'] = JSON.stringify(storedPayload);
+
+      const result = await fetchLayout('aux', undefined, true);
+
+      expect(result).toEqual(storedPayload);
+    });
+  });
+
+  describe('saveLayout with demoMode=true', () => {
+    it('saves to localStorage instead of API for master bus', async () => {
+      const payload = { globalGroups: [{ id: 'drums', name: 'Drums', channelIds: [1, 2] }] };
+
+      await saveLayout('master', undefined, payload, true);
+
+      expect(mockFetch).not.toHaveBeenCalled();
+      expect(localStorageMock.setItem).toHaveBeenCalledWith(
+        'ui24r-demo-layout-master',
+        expect.any(String)
+      );
+      expect(JSON.parse(mockLocalStorage['ui24r-demo-layout-master'])).toEqual(payload);
+    });
+
+    it('saves to localStorage for aux bus with correct key', async () => {
+      const payload = { sections: [{ id: 'fav', name: 'Favorites', channelIds: [3] }] };
+
+      await saveLayout('aux', 5, payload, true);
+
+      expect(mockFetch).not.toHaveBeenCalled();
+      expect(localStorageMock.setItem).toHaveBeenCalledWith(
+        'ui24r-demo-layout-aux-5',
+        expect.any(String)
+      );
+      expect(JSON.parse(mockLocalStorage['ui24r-demo-layout-aux-5'])).toEqual(payload);
+    });
+
+    it('saves to localStorage for gain bus', async () => {
+      const payload = { viewSettings: { offsetDb: 3 } };
+
+      await saveLayout('gain', undefined, payload, true);
+
+      expect(mockFetch).not.toHaveBeenCalled();
+      expect(JSON.parse(mockLocalStorage['ui24r-demo-layout-gain'])).toEqual(payload);
+    });
+
+    it('merges with existing stored data', async () => {
+      mockLocalStorage['ui24r-demo-layout-master'] = JSON.stringify({
+        globalGroups: [{ id: 'existing', name: 'Existing', channelIds: [1] }],
+      });
+
+      await saveLayout('master', undefined, { viewSettings: { offsetDb: 2 } }, true);
+
+      const stored = JSON.parse(mockLocalStorage['ui24r-demo-layout-master']);
+      expect(stored.globalGroups).toEqual([{ id: 'existing', name: 'Existing', channelIds: [1] }]);
+      expect(stored.viewSettings).toEqual({ offsetDb: 2 });
+    });
+
+    it('overwrites same keys in existing data', async () => {
+      mockLocalStorage['ui24r-demo-layout-master'] = JSON.stringify({
+        globalGroups: [{ id: 'old', name: 'Old', channelIds: [1] }],
+      });
+
+      await saveLayout(
+        'master',
+        undefined,
+        { globalGroups: [{ id: 'new', name: 'New', channelIds: [2, 3] }] },
+        true
+      );
+
+      const stored = JSON.parse(mockLocalStorage['ui24r-demo-layout-master']);
+      expect(stored.globalGroups).toEqual([{ id: 'new', name: 'New', channelIds: [2, 3] }]);
+    });
+
+    it('defaults aux busId to 1 in storage key', async () => {
+      await saveLayout('aux', undefined, { sections: [] }, true);
+
+      expect(localStorageMock.setItem).toHaveBeenCalledWith(
+        'ui24r-demo-layout-aux-1',
+        expect.any(String)
+      );
+    });
+  });
+
+  describe('round-trip save and fetch', () => {
+    it('can save and retrieve the same data', async () => {
+      const payload = {
+        sections: [{ id: 'test', name: 'Test', channelIds: [1, 2, 3] }],
+        globalGroups: [{ id: 'group', name: 'Group', channelIds: [4, 5] }],
+        globalSettings: { group: { offsetDb: 5, mode: 'ignore-inf' as const, enabled: true } },
+        viewSettings: { offsetDb: 0, mixOrder: [] },
+      };
+
+      await saveLayout('aux', 2, payload, true);
+      const result = await fetchLayout('aux', 2, true);
+
+      expect(result).toEqual(payload);
+    });
+  });
+});
+
 describe('LayoutPayload type validation', () => {
   it('allows empty payload', () => {
     const payload: LayoutPayload = {};

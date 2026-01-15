@@ -57,7 +57,6 @@ export type MixOrderItem =
 
 export type ViewSettings = {
   offsetDb?: number;
-  simpleControls?: boolean;
   mixOrder?: MixOrderItem[];
 };
 

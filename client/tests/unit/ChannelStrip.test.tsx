@@ -45,7 +45,6 @@ describe('ChannelStrip', () => {
           channel={channel}
           highlight={false}
           showMute={true}
-          simpleControls={false}
           {...mockHandlers}
         />
       );
@@ -62,7 +61,6 @@ describe('ChannelStrip', () => {
           channel={channel}
           highlight={false}
           showMute={true}
-          simpleControls={false}
           {...mockHandlers}
         />
       );
@@ -79,7 +77,6 @@ describe('ChannelStrip', () => {
           channel={channel}
           highlight={false}
           showMute={true}
-          simpleControls={false}
           {...mockHandlers}
         />
       );
@@ -95,7 +92,6 @@ describe('ChannelStrip', () => {
           channel={channel}
           highlight={false}
           showMute={true}
-          simpleControls={false}
           {...mockHandlers}
         />
       );
@@ -121,7 +117,6 @@ describe('ChannelStrip', () => {
             channel={channel}
             highlight={false}
             showMute={true}
-            simpleControls={false}
             {...mockHandlers}
           />
         );
@@ -141,7 +136,6 @@ describe('ChannelStrip', () => {
           channel={channel}
           highlight={false}
           showMute={true}
-          simpleControls={false}
           {...mockHandlers}
         />
       );
@@ -157,7 +151,6 @@ describe('ChannelStrip', () => {
           channel={channel}
           highlight={false}
           showMute={true}
-          simpleControls={false}
           {...mockHandlers}
         />
       );
@@ -169,7 +162,7 @@ describe('ChannelStrip', () => {
   });
 
   describe('Fader Interaction', () => {
-    it('calls onFaderChange when fader is moved (regular mode)', () => {
+    it('calls onFaderChange when fader is moved', () => {
       const channel = createMockChannel({ fader: 0.5 });
 
       render(
@@ -177,7 +170,6 @@ describe('ChannelStrip', () => {
           channel={channel}
           highlight={false}
           showMute={true}
-          simpleControls={false}
           {...mockHandlers}
         />
       );
@@ -196,7 +188,6 @@ describe('ChannelStrip', () => {
           channel={channel}
           highlight={false}
           showMute={true}
-          simpleControls={false}
           {...mockHandlers}
         />
       );
@@ -216,7 +207,6 @@ describe('ChannelStrip', () => {
           channel={channel}
           highlight={false}
           showMute={true}
-          simpleControls={false}
           {...mockHandlers}
         />
       );
@@ -228,10 +218,10 @@ describe('ChannelStrip', () => {
     });
   });
 
-  describe('Simple Controls Mode', () => {
+  describe('Stepper Buttons', () => {
     const STEP = 1 / 60; // As defined in the component
 
-    it('shows + and - buttons in simple controls mode', () => {
+    it('shows + and - stepper buttons', () => {
       const channel = createMockChannel({ fader: 0.5 });
 
       render(
@@ -239,13 +229,12 @@ describe('ChannelStrip', () => {
           channel={channel}
           highlight={false}
           showMute={true}
-          simpleControls={true}
           {...mockHandlers}
         />
       );
 
-      expect(screen.getByText('+')).toBeInTheDocument();
-      expect(screen.getByText('-')).toBeInTheDocument();
+      expect(screen.getByTitle('Increase level')).toBeInTheDocument();
+      expect(screen.getByTitle('Decrease level')).toBeInTheDocument();
     });
 
     it('calls onFaderChange with incremented value when + is clicked', () => {
@@ -256,12 +245,11 @@ describe('ChannelStrip', () => {
           channel={channel}
           highlight={false}
           showMute={true}
-          simpleControls={true}
           {...mockHandlers}
         />
       );
 
-      fireEvent.click(screen.getByText('+'));
+      fireEvent.click(screen.getByTitle('Increase level'));
 
       expect(mockHandlers.onFaderChange).toHaveBeenCalledWith(
         1,
@@ -277,12 +265,11 @@ describe('ChannelStrip', () => {
           channel={channel}
           highlight={false}
           showMute={true}
-          simpleControls={true}
           {...mockHandlers}
         />
       );
 
-      fireEvent.click(screen.getByText('-'));
+      fireEvent.click(screen.getByTitle('Decrease level'));
 
       expect(mockHandlers.onFaderChange).toHaveBeenCalledWith(
         1,
@@ -298,12 +285,11 @@ describe('ChannelStrip', () => {
           channel={channel}
           highlight={false}
           showMute={true}
-          simpleControls={true}
           {...mockHandlers}
         />
       );
 
-      fireEvent.click(screen.getByText('-'));
+      fireEvent.click(screen.getByTitle('Decrease level'));
 
       expect(mockHandlers.onFaderChange).toHaveBeenCalledWith(1, 0);
     });
@@ -316,36 +302,18 @@ describe('ChannelStrip', () => {
           channel={channel}
           highlight={false}
           showMute={true}
-          simpleControls={true}
           {...mockHandlers}
         />
       );
 
-      fireEvent.click(screen.getByText('+'));
+      fireEvent.click(screen.getByTitle('Increase level'));
 
       expect(mockHandlers.onFaderChange).toHaveBeenCalledWith(1, 1);
-    });
-
-    it('hides regular fader in simple controls mode', () => {
-      const channel = createMockChannel({ fader: 0.5 });
-
-      render(
-        <ChannelStrip
-          channel={channel}
-          highlight={false}
-          showMute={true}
-          simpleControls={true}
-          {...mockHandlers}
-        />
-      );
-
-      // Slider should not be present in simple controls mode
-      expect(screen.queryByRole('slider')).not.toBeInTheDocument();
     });
   });
 
   describe('Mute Button', () => {
-    it('shows mute button when muted is defined', () => {
+    it('shows M button when muted is defined', () => {
       const channel = createMockChannel({ muted: false });
 
       render(
@@ -353,12 +321,11 @@ describe('ChannelStrip', () => {
           channel={channel}
           highlight={false}
           showMute={true}
-          simpleControls={false}
           {...mockHandlers}
         />
       );
 
-      expect(screen.getByText('MUTE')).toBeInTheDocument();
+      expect(screen.getByText('M')).toBeInTheDocument();
     });
 
     it('calls onMuteToggle when clicked', () => {
@@ -369,12 +336,11 @@ describe('ChannelStrip', () => {
           channel={channel}
           highlight={false}
           showMute={true}
-          simpleControls={false}
           {...mockHandlers}
         />
       );
 
-      fireEvent.click(screen.getByText('MUTE'));
+      fireEvent.click(screen.getByText('M'));
 
       expect(mockHandlers.onMuteToggle).toHaveBeenCalledWith(1, true);
     });
@@ -387,17 +353,16 @@ describe('ChannelStrip', () => {
           channel={channel}
           highlight={false}
           showMute={false}
-          simpleControls={false}
           {...mockHandlers}
         />
       );
 
-      expect(screen.queryByText('MUTE')).not.toBeInTheDocument();
+      expect(screen.queryByText('M')).not.toBeInTheDocument();
     });
   });
 
   describe('Solo Button', () => {
-    it('shows solo button on master bus', () => {
+    it('shows S button on master bus', () => {
       const channel = createMockChannel({
         busType: 'master',
         bus: 0,
@@ -409,12 +374,11 @@ describe('ChannelStrip', () => {
           channel={channel}
           highlight={false}
           showMute={true}
-          simpleControls={false}
           {...mockHandlers}
         />
       );
 
-      expect(screen.getByText('SOLO')).toBeInTheDocument();
+      expect(screen.getByText('S')).toBeInTheDocument();
     });
 
     it('disables solo button on aux bus', () => {
@@ -429,13 +393,12 @@ describe('ChannelStrip', () => {
           channel={channel}
           highlight={false}
           showMute={true}
-          simpleControls={false}
           {...mockHandlers}
         />
       );
 
       // Solo button is shown but disabled on aux bus
-      const soloButton = screen.getByText('SOLO');
+      const soloButton = screen.getByText('S');
       expect(soloButton).toBeDisabled();
     });
 
@@ -451,12 +414,11 @@ describe('ChannelStrip', () => {
           channel={channel}
           highlight={false}
           showMute={true}
-          simpleControls={false}
           {...mockHandlers}
         />
       );
 
-      fireEvent.click(screen.getByText('SOLO'));
+      fireEvent.click(screen.getByText('S'));
 
       expect(mockHandlers.onSoloToggle).toHaveBeenCalledWith(1, true);
     });
@@ -471,7 +433,6 @@ describe('ChannelStrip', () => {
           channel={channel}
           highlight={true}
           showMute={true}
-          simpleControls={false}
           {...mockHandlers}
         />
       );
@@ -487,7 +448,6 @@ describe('ChannelStrip', () => {
           channel={channel}
           highlight={false}
           showMute={true}
-          simpleControls={false}
           {...mockHandlers}
         />
       );
@@ -511,7 +471,6 @@ describe('ChannelStrip', () => {
           channel={channel}
           highlight={false}
           showMute={true}
-          simpleControls={false}
           {...mockHandlers}
         />
       );
@@ -520,37 +479,11 @@ describe('ChannelStrip', () => {
       expect(screen.getByText('-24 dB')).toBeInTheDocument();
 
       // Mute should still be visible
-      expect(screen.getByText('MUTE')).toBeInTheDocument();
+      expect(screen.getByText('M')).toBeInTheDocument();
 
       // Solo button is shown but disabled on aux
-      const soloButton = screen.getByText('SOLO');
+      const soloButton = screen.getByText('S');
       expect(soloButton).toBeDisabled();
-    });
-
-    it('works with simple controls on aux bus', () => {
-      const channel = createMockChannel({
-        busType: 'aux',
-        bus: 2,
-        fader: 0.5,
-        faderDb: undefined,
-      });
-
-      render(
-        <ChannelStrip
-          channel={channel}
-          highlight={false}
-          showMute={true}
-          simpleControls={true}
-          {...mockHandlers}
-        />
-      );
-
-      // LCD should show calculated value
-      expect(screen.getByText('-30 dB')).toBeInTheDocument();
-
-      // + and - buttons should work
-      fireEvent.click(screen.getByText('+'));
-      expect(mockHandlers.onFaderChange).toHaveBeenCalled();
     });
   });
 
@@ -570,7 +503,6 @@ describe('ChannelStrip', () => {
           channel={channel}
           highlight={false}
           showMute={true}
-          simpleControls={false}
           {...mockHandlers}
         />
       );
@@ -614,7 +546,6 @@ describe('ChannelStrip - dB Display Bug Fix Verification', () => {
         channel={channelAfterFix}
         highlight={false}
         showMute={true}
-        simpleControls={false}
         {...mockHandlers}
       />
     );
@@ -637,7 +568,6 @@ describe('ChannelStrip - dB Display Bug Fix Verification', () => {
         channel={channelWithBug}
         highlight={false}
         showMute={true}
-        simpleControls={false}
         {...mockHandlers}
       />
     );
@@ -660,7 +590,6 @@ describe('ChannelStrip - dB Display Bug Fix Verification', () => {
         channel={channelAfterServerResponse}
         highlight={false}
         showMute={true}
-        simpleControls={false}
         {...mockHandlers}
       />
     );

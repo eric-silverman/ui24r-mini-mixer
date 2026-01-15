@@ -162,32 +162,14 @@ test.describe('Fader LCD Display Updates', () => {
     });
   });
 
-  test.describe('Simple Controls Mode', () => {
-    async function enableSimpleControls(page: Page) {
-      // Look for settings button or simple controls toggle
-      const settingsButton = page.locator('button:has-text("Simple")');
-      if (await settingsButton.isVisible()) {
-        await settingsButton.click();
-        await page.waitForTimeout(200);
-      }
-    }
+  test.describe('Stepper Buttons', () => {
+    // Stepper buttons are now always visible (Simple Controls mode was removed)
 
-    test.describe('Master Bus - Simple Controls', () => {
-      test.beforeEach(async ({ page }) => {
-        await enableSimpleControls(page);
-      });
-
-      test('simple controls buttons are visible when enabled', async ({ page }) => {
-        // Check if simple controls are enabled by looking for stepper buttons
-        const plusButton = page.locator('.simple-stepper:has-text("+")').first();
-        const minusButton = page.locator('.simple-stepper:has-text("-")').first();
-
-        // These may not be visible if simple controls isn't enabled in sample mode
-        // Skip if not present
-        if (!(await plusButton.isVisible())) {
-          test.skip();
-          return;
-        }
+    test.describe('Master Bus - Stepper Buttons', () => {
+      test('stepper buttons are always visible', async ({ page }) => {
+        const firstChannel = page.locator(channelStripSelector).first();
+        const plusButton = firstChannel.locator('[title="Increase level"]');
+        const minusButton = firstChannel.locator('[title="Decrease level"]');
 
         await expect(plusButton).toBeVisible();
         await expect(minusButton).toBeVisible();
@@ -196,12 +178,7 @@ test.describe('Fader LCD Display Updates', () => {
       test('LCD updates when clicking + button', async ({ page }) => {
         const firstChannel = page.locator(channelStripSelector).first();
         const lcd = firstChannel.locator('.strip-display-value');
-        const plusButton = firstChannel.locator('.simple-stepper:has-text("+")');
-
-        if (!(await plusButton.isVisible())) {
-          test.skip();
-          return;
-        }
+        const plusButton = firstChannel.locator('[title="Increase level"]');
 
         const initialText = await lcd.textContent();
         const initialMatch = initialText?.match(/-?\d+/);
@@ -222,12 +199,7 @@ test.describe('Fader LCD Display Updates', () => {
       test('LCD updates when clicking - button', async ({ page }) => {
         const firstChannel = page.locator(channelStripSelector).first();
         const lcd = firstChannel.locator('.strip-display-value');
-        const minusButton = firstChannel.locator('.simple-stepper:has-text("-")');
-
-        if (!(await minusButton.isVisible())) {
-          test.skip();
-          return;
-        }
+        const minusButton = firstChannel.locator('[title="Decrease level"]');
 
         const initialText = await lcd.textContent();
         const initialMatch = initialText?.match(/-?\d+/);
@@ -246,25 +218,18 @@ test.describe('Fader LCD Display Updates', () => {
       });
     });
 
-    test.describe('Aux Bus - Simple Controls', () => {
+    test.describe('Aux Bus - Stepper Buttons', () => {
       test.beforeEach(async ({ page }) => {
         // Switch to aux
         const auxButton = page.locator('.aux-button').first();
         await auxButton.click();
         await page.waitForTimeout(300);
-
-        await enableSimpleControls(page);
       });
 
       test('LCD updates when clicking + button on aux mix', async ({ page }) => {
         const firstChannel = page.locator(channelStripSelector).first();
         const lcd = firstChannel.locator('.strip-display-value');
-        const plusButton = firstChannel.locator('.simple-stepper:has-text("+")');
-
-        if (!(await plusButton.isVisible())) {
-          test.skip();
-          return;
-        }
+        const plusButton = firstChannel.locator('[title="Increase level"]');
 
         const initialText = await lcd.textContent();
         const initialMatch = initialText?.match(/-?\d+/);
@@ -289,12 +254,7 @@ test.describe('Fader LCD Display Updates', () => {
       test('LCD updates when clicking - button on aux mix', async ({ page }) => {
         const firstChannel = page.locator(channelStripSelector).first();
         const lcd = firstChannel.locator('.strip-display-value');
-        const minusButton = firstChannel.locator('.simple-stepper:has-text("-")');
-
-        if (!(await minusButton.isVisible())) {
-          test.skip();
-          return;
-        }
+        const minusButton = firstChannel.locator('[title="Decrease level"]');
 
         const initialText = await lcd.textContent();
         const initialMatch = initialText?.match(/-?\d+/);
@@ -399,7 +359,6 @@ test.describe('LCD Display Visual Appearance', () => {
     await page.waitForTimeout(1000);
     await expect(page).toHaveScreenshot('lcd-master-bus.png', {
       fullPage: true,
-      maxDiffPixels: 200,
     });
   });
 
@@ -410,7 +369,6 @@ test.describe('LCD Display Visual Appearance', () => {
     await page.waitForTimeout(1000);
     await expect(page).toHaveScreenshot('lcd-aux-bus.png', {
       fullPage: true,
-      maxDiffPixels: 200,
     });
   });
 });

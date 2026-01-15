@@ -7,7 +7,6 @@ type Props = {
   meterValue?: number;
   highlight: boolean;
   showMute: boolean;
-  simpleControls: boolean;
   debugMeter?: boolean;
   onFaderChange: (id: number, value: number) => void;
   onMuteToggle: (id: number, muted: boolean) => void;
@@ -47,7 +46,6 @@ export default function ChannelStrip({
   meterValue,
   highlight,
   showMute,
-  simpleControls,
   debugMeter = false,
   onFaderChange,
   onMuteToggle,
@@ -70,9 +68,7 @@ export default function ChannelStrip({
   const dbDisplay = useMemo(() => `${Math.round(dbValue)} dB`, [dbValue]);
 
   const muteSupported = channel.muted !== undefined;
-  const muteLabel = 'MUTE';
   const soloSupported = channel.busType === 'master' && channel.solo !== undefined;
-  const soloLabel = 'SOLO';
   const meterHeight = `${percentage}%`;
   const meterMaxed = percentage >= 98;
   const step = 1 / 60;
@@ -96,11 +92,7 @@ export default function ChannelStrip({
   }, [channelLabel]);
 
   return (
-    <div
-      className={`channel-card ${highlight ? 'channel-flash' : ''} ${
-        simpleControls ? 'channel-card-simple' : ''
-      }`}
-    >
+    <div className={`channel-card ${highlight ? 'channel-flash' : ''}`}>
       <div className="strip-header">
         <div
           ref={labelRef}
@@ -111,108 +103,86 @@ export default function ChannelStrip({
         >
           {channelLabel}
         </div>
-        <div className={`strip-display-row ${simpleControls ? 'simple-display-single' : ''}`}>
+        <div className="strip-display-row">
           <div className="strip-display">
             <div className="strip-display-value">{dbDisplay}</div>
           </div>
         </div>
-        {debugMeter && !simpleControls && (
+        {debugMeter && (
           <div className="meter-debug">
             VU {Math.round((meterValue ?? 0) * 100)}%
           </div>
         )}
       </div>
-      {showMute &&
-        (simpleControls ? (
-          <div className="strip-controls strip-controls-compact strip-controls-simple">
-            <div className="simple-control-stack">
-              <button
-                type="button"
-                className={`mute-button ${channel.muted ? 'active' : ''}`}
-                onClick={() => onMuteToggle(channel.id, !channel.muted)}
-                disabled={!muteSupported}
-                title={muteSupported ? '' : 'Mute not implemented'}
-              >
-                M
-              </button>
-              <button
-                type="button"
-                className="simple-stepper"
-                onClick={() => onFaderChange(channel.id, clamp(channel.fader - step))}
-              >
-                -
-              </button>
-            </div>
-            <div className="simple-control-stack">
-              <button
-                type="button"
-                className={`solo-button ${channel.solo ? 'active' : ''}`}
-                onClick={() => onSoloToggle(channel.id, !channel.solo)}
-                disabled={!soloSupported}
-                title={soloSupported ? '' : 'Solo only on Main Mix'}
-              >
-                S
-              </button>
-              <button
-                type="button"
-                className="simple-stepper"
-                onClick={() => onFaderChange(channel.id, clamp(channel.fader + step))}
-              >
-                +
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="strip-controls">
-            <button
-              type="button"
-              className={`mute-button ${channel.muted ? 'active' : ''}`}
-              onClick={() => onMuteToggle(channel.id, !channel.muted)}
-              disabled={!muteSupported}
-              title={muteSupported ? '' : 'Mute not implemented'}
-            >
-              {muteLabel}
-            </button>
-            <button
-              type="button"
-              className={`solo-button ${channel.solo ? 'active' : ''}`}
-              onClick={() => onSoloToggle(channel.id, !channel.solo)}
-              disabled={!soloSupported}
-              title={soloSupported ? '' : 'Solo only on Main Mix'}
-            >
-              {soloLabel}
-            </button>
-          </div>
-        ))}
 
-      {!simpleControls && (
-        <div className="fader-zone">
-          <div className="scale">
-            {SCALE_LABELS.map(label => (
-              <span key={label}>{label}</span>
-            ))}
-          </div>
-          <div className="meter-slot meter">
-            <div
-              className={`meter-fill ${meterMaxed ? 'meter-fill-max' : ''}`}
-              style={{ height: meterHeight }}
-            />
-          </div>
-          <div className="fader-slot">
-            <input
-              type="range"
-              min={0}
-              max={1}
-              step={0.001}
-              value={channel.fader}
-              onChange={event => onFaderChange(channel.id, clamp(Number(event.target.value)))}
-              onPointerDown={() => onDragStart(channel.id)}
-              onPointerUp={onDragEnd}
-              className="fader"
-            />
-          </div>
+      {showMute && (
+        <div className="strip-controls">
+          <button
+            type="button"
+            className={`mute-button ${channel.muted ? 'active' : ''}`}
+            onClick={() => onMuteToggle(channel.id, !channel.muted)}
+            disabled={!muteSupported}
+            title={muteSupported ? 'Mute' : 'Mute not implemented'}
+          >
+            M
+          </button>
+          <button
+            type="button"
+            className={`solo-button ${channel.solo ? 'active' : ''}`}
+            onClick={() => onSoloToggle(channel.id, !channel.solo)}
+            disabled={!soloSupported}
+            title={soloSupported ? 'Solo' : 'Solo only on Main Mix'}
+          >
+            S
+          </button>
         </div>
       )}
+
+      <div className="fader-zone">
+        <div className="scale">
+          {SCALE_LABELS.map(label => (
+            <span key={label}>{label}</span>
+          ))}
+        </div>
+        <div className="meter-slot meter">
+          <div
+            className={`meter-fill ${meterMaxed ? 'meter-fill-max' : ''}`}
+            style={{ height: meterHeight }}
+          />
+        </div>
+        <div className="fader-slot">
+          <input
+            type="range"
+            min={0}
+            max={1}
+            step={0.001}
+            value={channel.fader}
+            onChange={event => onFaderChange(channel.id, clamp(Number(event.target.value)))}
+            onPointerDown={() => onDragStart(channel.id)}
+            onPointerUp={onDragEnd}
+            className="fader"
+          />
+        </div>
+      </div>
+
+      <div className="stepper-row">
+        <button
+          type="button"
+          className="stepper-button"
+          onClick={() => onFaderChange(channel.id, clamp(channel.fader - step))}
+          title="Decrease level"
+        >
+          −
+        </button>
+        <button
+          type="button"
+          className="stepper-button"
+          onClick={() => onFaderChange(channel.id, clamp(channel.fader + step))}
+          title="Increase level"
+        >
+          +
+        </button>
+      </div>
 
       <div className="strip-footer">CH {channel.id}</div>
     </div>

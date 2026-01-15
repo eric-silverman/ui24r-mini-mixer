@@ -177,7 +177,7 @@ function groupStereoAuxBuses(auxBuses: AuxBusState[]): AuxDisplayItem[] {
 
 function buildDefaultLayout(channelIds: number[]): ChannelSection[] {
   return [
-    { id: FAVORITES_ID, name: 'My Channels', channelIds: [], offsetDb: 0, mode: 'ignore-inf' },
+    { id: FAVORITES_ID, name: 'Favorites', channelIds: [], offsetDb: 0, mode: 'ignore-inf' },
     {
       id: OTHERS_ID,
       name: 'Other',
@@ -199,7 +199,7 @@ function normalizeLayout(sections: ChannelSection[], channelIds: number[]): Chan
     if (!section.id || byId.has(section.id)) {
       return;
     }
-    const nameOverride = section.id === FAVORITES_ID ? 'My Channels' : section.name || section.id;
+    const nameOverride = section.id === FAVORITES_ID ? 'Favorites' : section.name || section.id;
     byId.set(section.id, {
       id: section.id,
       name: nameOverride,
@@ -216,7 +216,7 @@ function normalizeLayout(sections: ChannelSection[], channelIds: number[]): Chan
   if (!byId.has(FAVORITES_ID)) {
     byId.set(FAVORITES_ID, {
       id: FAVORITES_ID,
-      name: 'My Channels',
+      name: 'Favorites',
       channelIds: [],
       offsetDb: 0,
       mode: 'ignore-inf',
@@ -471,8 +471,8 @@ export default function App() {
     gain: ViewSettings;
     aux: Record<number, ViewSettings>;
   }>({
-    master: { offsetDb: 0, simpleControls: false, mixOrder: [] },
-    gain: { offsetDb: 0, simpleControls: false, mixOrder: [] },
+    master: { offsetDb: 0, mixOrder: [] },
+    gain: { offsetDb: 0, mixOrder: [] },
     aux: {},
   });
   const layoutLoadedRef = useRef(false);
@@ -579,23 +579,13 @@ export default function App() {
       viewSettingsSaveTimeoutRef.current = null;
     }
 
-    if (sampleMode) {
-      setAuxLayout([]);
-      setGlobalGroups([]);
-      setGlobalSettings({});
-      layoutLoadedRef.current = true;
-      globalLoadedRef.current = true;
-      return;
-    }
-
-    fetchLayout(activeBus.type, activeBus.id)
+    fetchLayout(activeBus.type, activeBus.id, sampleMode)
       .then(payload => {
         setAuxLayout(activeBus.type === 'aux' ? payload.sections ?? [] : []);
         setGlobalGroups(payload.globalGroups ?? []);
         setGlobalSettings(payload.globalSettings ?? {});
         const nextViewSettings = payload.viewSettings ?? {
           offsetDb: 0,
-          simpleControls: false,
           mixOrder: [],
         };
         if (activeBus.type === 'aux') {
@@ -637,7 +627,7 @@ export default function App() {
   );
   const getViewSettingsForBus = useCallback(
     (busType: BusType, busId: number) => {
-      const fallback: ViewSettings = { offsetDb: 0, simpleControls: false, mixOrder: [] };
+      const fallback: ViewSettings = { offsetDb: 0, mixOrder: [] };
       if (busType === 'aux') {
         return viewSettings.aux[busId] ?? fallback;
       }
@@ -708,19 +698,16 @@ export default function App() {
   }, [globalSettings, normalizedGlobalSettings]);
 
   useEffect(() => {
-    if (
-      sampleMode ||
-      activeBus.type !== 'aux' ||
-      !layoutLoadedRef.current ||
-      !layoutDirtyRef.current
-    ) {
+    if (activeBus.type !== 'aux' || !layoutLoadedRef.current || !layoutDirtyRef.current) {
       return;
     }
     if (layoutSaveTimeoutRef.current) {
       window.clearTimeout(layoutSaveTimeoutRef.current);
     }
     layoutSaveTimeoutRef.current = window.setTimeout(() => {
-      saveLayout('aux', activeBus.id, { sections: normalizedLayout }).catch(() => undefined);
+      saveLayout('aux', activeBus.id, { sections: normalizedLayout }, sampleMode).catch(
+        () => undefined
+      );
       layoutDirtyRef.current = false;
     }, 400);
     return () => {
@@ -732,14 +719,14 @@ export default function App() {
   }, [activeBus.type, activeBus.id, normalizedLayout, sampleMode]);
 
   useEffect(() => {
-    if (sampleMode || !globalLoadedRef.current || !globalDirtyRef.current) {
+    if (!globalLoadedRef.current || !globalDirtyRef.current) {
       return;
     }
     if (globalSaveTimeoutRef.current) {
       window.clearTimeout(globalSaveTimeoutRef.current);
     }
     globalSaveTimeoutRef.current = window.setTimeout(() => {
-      saveLayout('master', undefined, { globalGroups }).catch(() => undefined);
+      saveLayout('master', undefined, { globalGroups }, sampleMode).catch(() => undefined);
       globalDirtyRef.current = false;
     }, 400);
     return () => {
@@ -751,14 +738,16 @@ export default function App() {
   }, [globalGroups, sampleMode]);
 
   useEffect(() => {
-    if (sampleMode || !globalLoadedRef.current || !globalSettingsDirtyRef.current) {
+    if (!globalLoadedRef.current || !globalSettingsDirtyRef.current) {
       return;
     }
     if (globalSettingsSaveTimeoutRef.current) {
       window.clearTimeout(globalSettingsSaveTimeoutRef.current);
     }
     globalSettingsSaveTimeoutRef.current = window.setTimeout(() => {
-      saveLayout(activeBus.type, activeBus.id, { globalSettings }).catch(() => undefined);
+      saveLayout(activeBus.type, activeBus.id, { globalSettings }, sampleMode).catch(
+        () => undefined
+      );
       globalSettingsDirtyRef.current = false;
     }, 400);
     return () => {
@@ -770,7 +759,7 @@ export default function App() {
   }, [activeBus.type, activeBus.id, globalSettings, sampleMode]);
 
   useEffect(() => {
-    if (sampleMode || !globalLoadedRef.current || !viewSettingsDirtyRef.current) {
+    if (!globalLoadedRef.current || !viewSettingsDirtyRef.current) {
       return;
     }
     if (viewSettingsSaveTimeoutRef.current) {
@@ -780,7 +769,7 @@ export default function App() {
     viewSettingsSaveTimeoutRef.current = window.setTimeout(() => {
       const current = getViewSettingsForBus(dirtyTarget.type, dirtyTarget.id);
       if (current) {
-        saveLayout(dirtyTarget.type, dirtyTarget.id, { viewSettings: current }).catch(
+        saveLayout(dirtyTarget.type, dirtyTarget.id, { viewSettings: current }, sampleMode).catch(
           () => undefined
         );
       }
@@ -1295,7 +1284,7 @@ export default function App() {
 
   const handleResetLayout = () => {
     const confirmReset = window.confirm(
-      'Reset layout? This clears local V-Groups, disables Global V-Groups, and clears My Channels for this view.'
+      'Reset layout? This clears local V-Groups, disables Global V-Groups, and clears Favorites for this view.'
     );
     if (!confirmReset) {
       return;
@@ -1569,14 +1558,6 @@ export default function App() {
     updateViewSettings(activeBusRef.current.type, activeBusRef.current.id, {
       ...getViewSettingsForBus(activeBusRef.current.type, activeBusRef.current.id),
       offsetDb: nextOffset,
-    });
-  };
-
-  const handleToggleSimpleControls = () => {
-    const current = getViewSettingsForBus(activeBus.type, activeBus.id);
-    updateViewSettings(activeBus.type, activeBus.id, {
-      ...current,
-      simpleControls: !(current.simpleControls ?? false),
     });
   };
 
@@ -2097,7 +2078,6 @@ export default function App() {
     () => getViewSettingsForBus(activeBus.type, activeBus.id),
     [activeBus.type, activeBus.id, getViewSettingsForBus]
   );
-  const simpleControls = activeViewSettings.simpleControls ?? false;
   const mixRowItems = useMemo(() => {
     const groupList = activeBus.type === 'aux' ? auxGroupList : globalGroupsWithChannels;
     const groupMap = new Map<string, MixGroup>();
@@ -2171,8 +2151,7 @@ export default function App() {
       solo={solo}
       showVisibilityToggle={showVisibilityToggle}
       isVisible={isVisible}
-      compact={simpleControls}
-      simpleControls={simpleControls}
+      compact={false}
       showGlobalIndicator={showGlobalIndicator}
       onOffsetChange={onChange}
       onModeChange={onModeChange}
@@ -2257,7 +2236,7 @@ export default function App() {
               meterValue={resolveMeterValue(channel)}
               highlight={!!highlighted[channel.id]}
               showMute={activeBus.type !== 'gain'}
-              simpleControls={simpleControls}
+
               onFaderChange={handleFaderChange}
               onMuteToggle={handleMuteToggle}
               onSoloToggle={handleSoloToggle}
@@ -2597,7 +2576,7 @@ export default function App() {
                       meterValue={resolveMeterValue(channel)}
                       highlight={!!highlighted[channel.id]}
                       showMute={activeBus.type !== 'gain'}
-                      simpleControls={simpleControls}
+        
                       onFaderChange={handleFaderChange}
                       onMuteToggle={handleMuteToggle}
                       onSoloToggle={handleSoloToggle}
@@ -2622,7 +2601,7 @@ export default function App() {
                         className="group-remove group-remove-favorite"
                         type="button"
                         onClick={() => handleFavoriteToggle(channel.id)}
-                        title="Remove from My Channels"
+                        title="Remove from Favorites"
                       >
                         ★
                       </button>
@@ -2632,7 +2611,7 @@ export default function App() {
                         className="group-remove group-add-favorite"
                         type="button"
                         onClick={() => handleFavoriteToggle(channel.id)}
-                        title="Add to My Channels"
+                        title="Add to Favorites"
                       >
                         ☆
                       </button>
@@ -2886,14 +2865,6 @@ export default function App() {
                   </ul>
                 </section>
                 <section className="help-section">
-                  <h3>Simple Controls</h3>
-                  <ul>
-                    <li>Toggle Simple Controls in the toolbar.</li>
-                    <li>M for mute, S for solo (Main Mix only).</li>
-                    <li>Plus/minus steps for quick fader moves.</li>
-                  </ul>
-                </section>
-                <section className="help-section">
                   <h3>V-Groups</h3>
                   <ul>
                     <li>Use V-Groups to group channels together.</li>
@@ -2909,9 +2880,9 @@ export default function App() {
                   </ul>
                 </section>
                 <section className="help-section">
-                  <h3>Reset Layout</h3>
+                  <h3>Reset</h3>
                   <ul>
-                    <li>Reset Layout in the toolbar restores defaults.</li>
+                    <li>Reset button in the toolbar restores defaults.</li>
                     <li>Clears local groups and custom ordering.</li>
                   </ul>
                 </section>
@@ -3083,7 +3054,7 @@ export default function App() {
           <div className="vgroup-admin-header">
             <div className="sections-title">Global V-Groups</div>
             <button className="mode-button" type="button" onClick={handleAddGlobalGroup}>
-              New Global V-Group
+              + New V-Group
             </button>
           </div>
           {normalizedGlobalGroups.length === 0 && (
@@ -3134,33 +3105,6 @@ export default function App() {
         <div className="sections-shell">
           <div className="sections-toolbar-shell">
             <div className="sections-toolbar">
-              <div className="sections-toolbar-primary">
-                <button
-                  className={`section-button ${simpleControls ? 'mode-button-active' : ''}`}
-                  type="button"
-                  onClick={handleToggleSimpleControls}
-                >
-                  Simple Controls
-                </button>
-                {assignedAuxId === null && (
-                  <button
-                    className="section-button"
-                    type="button"
-                    onClick={() => setAssignedAuxId(activeBus.id)}
-                  >
-                    Assign to Me
-                  </button>
-                )}
-                {assignedAuxId === activeBus.id && (
-                  <button
-                    className="section-button"
-                    type="button"
-                    onClick={() => setAssignedAuxId(null)}
-                  >
-                    Un-assign
-                  </button>
-                )}
-              </div>
               <div className="sections-actions">
                 {normalizedGlobalGroups.map(group => {
                   const enabled = normalizedGlobalSettings[group.id]?.enabled ?? false;
@@ -3197,10 +3141,10 @@ export default function App() {
                   );
                 })}
                 <button className="mode-button" type="button" onClick={handleAddSection}>
-                  Add V-Group
+                  + Add V-Group
                 </button>
                 <button className="section-button" type="button" onClick={handleResetLayout}>
-                  Reset Layout
+                  ↻ Reset
                 </button>
               </div>
             </div>
@@ -3272,16 +3216,9 @@ export default function App() {
         <div className="sections-shell">
           <div className="sections-toolbar-shell">
             <div className="sections-toolbar">
-              <button
-                className={`section-button ${simpleControls ? 'mode-button-active' : ''}`}
-                type="button"
-                onClick={handleToggleSimpleControls}
-              >
-                Simple Controls
-              </button>
               <div className="sections-actions">
                 <button className="section-button" type="button" onClick={handleResetLayout}>
-                  Reset Layout
+                  ↻ Reset
                 </button>
               </div>
             </div>

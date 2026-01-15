@@ -14,7 +14,6 @@ type Props = {
   showVisibilityToggle: boolean;
   isVisible: boolean;
   compact: boolean;
-  simpleControls: boolean;
   showGlobalIndicator: boolean;
   onOffsetChange: (next: number) => void;
   onModeChange: (nextMode: ChannelSection['mode']) => void;
@@ -57,7 +56,6 @@ export default function VGroupStrip({
   showVisibilityToggle,
   isVisible,
   compact,
-  simpleControls,
   showGlobalIndicator,
   onOffsetChange,
   onModeChange,
@@ -79,7 +77,7 @@ export default function VGroupStrip({
   const step = 1;
 
   return (
-    <div className={`channel-card vgroup-strip-card ${compact ? 'channel-card-simple' : ''}`}>
+    <div className={`channel-card vgroup-strip-card ${compact ? 'channel-card-compact' : ''}`}>
       <div className="strip-header">
         <div className="strip-id-row strip-id-row-centered">
           <div
@@ -91,112 +89,82 @@ export default function VGroupStrip({
             {title}
           </div>
         </div>
-        <div className={`strip-display-row ${simpleControls ? 'simple-display-single' : ''}`}>
+        <div className="strip-display-row">
           <div className="strip-display">
             <div className="strip-display-value">{formatOffset(offsetDb)}</div>
           </div>
         </div>
       </div>
 
-      {showMute &&
-        (simpleControls ? (
-          <div className="strip-controls strip-controls-compact strip-controls-simple">
-            <div className="simple-control-stack">
-              <button
-                type="button"
-                className={`mute-button ${muted ? 'active' : ''}`}
-                onClick={() => onMuteToggle(!muted)}
-              >
-                M
-              </button>
-              <button
-                type="button"
-                className="simple-stepper"
-                onClick={() => onOffsetChange(offsetDb - step)}
-              >
-                -
-              </button>
-            </div>
-            <div className="simple-control-stack">
-              <button
-                type="button"
-                className={`solo-button ${solo ? 'active' : ''}`}
-                onClick={() => onSoloToggle(!solo)}
-                disabled={!showSolo}
-                title={showSolo ? '' : 'Solo only on Main Mix'}
-              >
-                S
-              </button>
-              <button
-                type="button"
-                className="simple-stepper"
-                onClick={() => onOffsetChange(offsetDb + step)}
-              >
-                +
-              </button>
-            </div>
-            {showVisibilityToggle && (
-              <div className="simple-control-stack">
-                <button
-                  type="button"
-                  className={`show-button ${isVisible ? 'active' : ''}`}
-                  onClick={onVisibilityToggle}
-                >
-                  {isVisible ? 'HIDE' : 'SHOW'}
-                </button>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="strip-controls">
+      {showMute && (
+        <div className="strip-controls">
+          <button
+            type="button"
+            className={`mute-button ${muted ? 'active' : ''}`}
+            onClick={() => onMuteToggle(!muted)}
+            title="Mute"
+          >
+            M
+          </button>
+          <button
+            type="button"
+            className={`solo-button ${solo ? 'active' : ''}`}
+            onClick={() => onSoloToggle(!solo)}
+            disabled={!showSolo}
+            title={showSolo ? 'Solo' : 'Solo only on Main Mix'}
+          >
+            S
+          </button>
+          {showVisibilityToggle && (
             <button
               type="button"
-              className={`mute-button ${muted ? 'active' : ''}`}
-              onClick={() => onMuteToggle(!muted)}
+              className={`show-button ${isVisible ? 'active' : ''}`}
+              onClick={onVisibilityToggle}
+              title={isVisible ? 'Hide channels' : 'Show channels'}
             >
-              MUTE
+              {isVisible ? '−' : '+'}
             </button>
-            <button
-              type="button"
-              className={`solo-button ${solo ? 'active' : ''}`}
-              onClick={() => onSoloToggle(!solo)}
-              disabled={!showSolo}
-              title={showSolo ? '' : 'Solo only on Main Mix'}
-            >
-              SOLO
-            </button>
-            {showVisibilityToggle && (
-              <button
-                type="button"
-                className={`show-button ${isVisible ? 'active' : ''}`}
-                onClick={onVisibilityToggle}
-              >
-                {isVisible ? 'HIDE' : 'SHOW'}
-              </button>
-            )}
-          </div>
-        ))}
-
-      {!simpleControls && (
-        <div className="fader-zone">
-          <div className="scale">
-            {VGROUP_SCALE.map(label => (
-              <span key={label}>{label}</span>
-            ))}
-          </div>
-          <div className="fader-slot">
-            <input
-              type="range"
-              min={-12}
-              max={12}
-              step={1}
-              value={offsetDb}
-              onChange={event => onOffsetChange(Number(event.target.value))}
-              className="fader"
-            />
-          </div>
+          )}
         </div>
       )}
+
+      <div className="fader-zone">
+        <div className="scale">
+          {VGROUP_SCALE.map(label => (
+            <span key={label}>{label}</span>
+          ))}
+        </div>
+        <div className="fader-slot">
+          <input
+            type="range"
+            min={-12}
+            max={12}
+            step={1}
+            value={offsetDb}
+            onChange={event => onOffsetChange(Number(event.target.value))}
+            className="fader"
+          />
+        </div>
+      </div>
+
+      <div className="stepper-row">
+        <button
+          type="button"
+          className="stepper-button"
+          onClick={() => onOffsetChange(offsetDb - step)}
+          title="Decrease offset"
+        >
+          −
+        </button>
+        <button
+          type="button"
+          className="stepper-button"
+          onClick={() => onOffsetChange(offsetDb + step)}
+          title="Increase offset"
+        >
+          +
+        </button>
+      </div>
 
       {showModeSelect && (
         <select

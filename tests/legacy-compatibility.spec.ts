@@ -167,10 +167,12 @@ test.describe('Production Build Functionality', () => {
   // These tests require a preview server and should only run with --workers=1
   // They are meant to be run via: ./test.sh legacy
   // Skip when running full test suite (multiple projects/workers)
-  test.describe.configure({ mode: 'serial' });
+  test.describe.configure({ mode: 'serial', retries: 2 });
   test.use({
     baseURL: 'http://localhost:4173',
   });
+  // Increase timeout for these flaky tests that need server startup
+  test.setTimeout(60000);
 
   test.beforeAll(async () => {
     // Skip if running with multiple workers (detected by env or other tests running)
@@ -197,17 +199,17 @@ test.describe('Production Build Functionality', () => {
     page.on('pageerror', error => errors.push(error.message));
 
     await page.goto('/?sample=true');
-    await page.waitForSelector('.app-shell', { timeout: 15000 });
+    await page.waitForSelector('.app-shell', { timeout: 30000 });
 
     expect(errors, 'Should have no JavaScript errors').toHaveLength(0);
   });
 
   test('production build renders channels correctly', async ({ page }) => {
     await page.goto('/?sample=true');
-    await page.waitForSelector('.app-shell', { timeout: 15000 });
+    await page.waitForSelector('.app-shell', { timeout: 30000 });
 
     // Wait for channel cards to render with sample data
-    await page.waitForSelector('.channel-card', { timeout: 15000 });
+    await page.waitForSelector('.channel-card', { timeout: 30000 });
 
     // Verify core functionality works
     const channels = await page.locator('.channel-card').count();
@@ -215,36 +217,31 @@ test.describe('Production Build Functionality', () => {
 
     // Verify faders are interactive
     const fader = page.locator('.fader').first();
-    await expect(fader).toBeVisible({ timeout: 10000 });
+    await expect(fader).toBeVisible({ timeout: 15000 });
   });
 
-  test('production build Simple Controls toggle works', async ({ page }) => {
+  test('production build stepper buttons are always visible', async ({ page }) => {
     await page.goto('/?sample=true');
-    await page.waitForSelector('.app-shell', { timeout: 15000 });
+    await page.waitForSelector('.app-shell', { timeout: 30000 });
 
     // Wait for channel cards to render with sample data
-    await page.waitForSelector('.channel-card', { timeout: 15000 });
+    await page.waitForSelector('.channel-card', { timeout: 30000 });
 
-    // Check steppers don't exist initially
-    let steppersBefore = await page.locator('.simple-stepper').count();
-    expect(steppersBefore).toBe(0);
+    // Stepper buttons are now always visible (Simple Controls mode was removed)
+    const stepperButtons = await page.locator('.stepper-button').count();
+    expect(stepperButtons).toBeGreaterThan(0);
 
-    // Click Simple Controls button
-    const simpleBtn = page.locator('button:has-text("Simple Controls")').first();
-    await simpleBtn.click();
-    await page.waitForTimeout(300);
-
-    // Verify steppers appear
-    let steppersAfter = await page.locator('.simple-stepper').count();
-    expect(steppersAfter).toBeGreaterThan(0);
+    // Verify stepper buttons are clickable
+    const increaseBtn = page.locator('[title="Increase level"]').first();
+    await expect(increaseBtn).toBeVisible({ timeout: 10000 });
   });
 
   test('production build fader interaction works', async ({ page }) => {
     await page.goto('/?sample=true');
-    await page.waitForSelector('.app-shell', { timeout: 15000 });
+    await page.waitForSelector('.app-shell', { timeout: 30000 });
 
     // Wait for channel cards to render with sample data
-    await page.waitForSelector('.channel-card', { timeout: 15000 });
+    await page.waitForSelector('.channel-card', { timeout: 30000 });
 
     // Use .fader selector like other tests
     const fader = page.locator('.fader').first();

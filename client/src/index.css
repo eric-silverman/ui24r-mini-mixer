@@ -1654,6 +1654,37 @@ body {
   margin-left: -14px;
 }
 
+.stepper-row {
+  display: flex;
+  gap: 6px;
+  padding: 6px 8px;
+  justify-content: center;
+}
+
+.stepper-button {
+  flex: 1;
+  min-width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: linear-gradient(180deg, #2b2e36 0%, #1b1d23 100%);
+  color: var(--text);
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.1s;
+  touch-action: manipulation;
+}
+
+.stepper-button:hover {
+  background: linear-gradient(180deg, #3b3e46 0%, #2b2d33 100%);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.stepper-button:active {
+  background: linear-gradient(180deg, #1b1d23 0%, #2b2e36 100%);
+}
+
 .strip-footer {
   text-align: center;
   padding: 6px 0 0;

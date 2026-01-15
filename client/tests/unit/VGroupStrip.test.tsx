@@ -21,7 +21,6 @@ const defaultProps = {
   showVisibilityToggle: true,
   isVisible: true,
   compact: false,
-  simpleControls: false,
   showGlobalIndicator: false,
   onOffsetChange: vi.fn(),
   onModeChange: vi.fn(),
@@ -94,14 +93,9 @@ describe('VGroupStrip', () => {
   });
 
   describe('fader interaction', () => {
-    it('renders fader in normal mode', () => {
-      render(<VGroupStrip {...defaultProps} simpleControls={false} />);
+    it('renders fader', () => {
+      render(<VGroupStrip {...defaultProps} />);
       expect(screen.getByRole('slider')).toBeInTheDocument();
-    });
-
-    it('hides fader in simple controls mode', () => {
-      render(<VGroupStrip {...defaultProps} simpleControls={true} />);
-      expect(screen.queryByRole('slider')).not.toBeInTheDocument();
     });
 
     it('fader has correct value', () => {
@@ -133,7 +127,7 @@ describe('VGroupStrip', () => {
     });
 
     it('renders scale labels', () => {
-      render(<VGroupStrip {...defaultProps} simpleControls={false} />);
+      render(<VGroupStrip {...defaultProps} />);
       expect(screen.getByText('+12')).toBeInTheDocument();
       expect(screen.getByText('+6')).toBeInTheDocument();
       expect(screen.getByText('0')).toBeInTheDocument();
@@ -142,11 +136,11 @@ describe('VGroupStrip', () => {
     });
   });
 
-  describe('simple controls mode', () => {
-    it('shows + and - buttons in simple mode', () => {
-      render(<VGroupStrip {...defaultProps} simpleControls={true} />);
-      expect(screen.getByRole('button', { name: '+' })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: '-' })).toBeInTheDocument();
+  describe('stepper buttons', () => {
+    it('shows + and - stepper buttons', () => {
+      render(<VGroupStrip {...defaultProps} />);
+      expect(screen.getByTitle('Increase offset')).toBeInTheDocument();
+      expect(screen.getByTitle('Decrease offset')).toBeInTheDocument();
     });
 
     it('+ button increases offset by 1', () => {
@@ -154,13 +148,12 @@ describe('VGroupStrip', () => {
       render(
         <VGroupStrip
           {...defaultProps}
-          simpleControls={true}
           offsetDb={0}
           onOffsetChange={onOffsetChange}
         />
       );
 
-      fireEvent.click(screen.getByRole('button', { name: '+' }));
+      fireEvent.click(screen.getByTitle('Increase offset'));
 
       expect(onOffsetChange).toHaveBeenCalledWith(1);
     });
@@ -170,44 +163,67 @@ describe('VGroupStrip', () => {
       render(
         <VGroupStrip
           {...defaultProps}
-          simpleControls={true}
           offsetDb={0}
           onOffsetChange={onOffsetChange}
         />
       );
 
-      fireEvent.click(screen.getByRole('button', { name: '-' }));
+      fireEvent.click(screen.getByTitle('Decrease offset'));
 
       expect(onOffsetChange).toHaveBeenCalledWith(-1);
     });
 
-    it('shows M and S labels for mute/solo in simple mode', () => {
-      render(<VGroupStrip {...defaultProps} simpleControls={true} />);
-      expect(screen.getByRole('button', { name: 'M' })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'S' })).toBeInTheDocument();
+    it('+ button works at positive values', () => {
+      const onOffsetChange = vi.fn();
+      render(
+        <VGroupStrip
+          {...defaultProps}
+          offsetDb={6}
+          onOffsetChange={onOffsetChange}
+        />
+      );
+
+      fireEvent.click(screen.getByTitle('Increase offset'));
+
+      expect(onOffsetChange).toHaveBeenCalledWith(7);
+    });
+
+    it('- button works at negative values', () => {
+      const onOffsetChange = vi.fn();
+      render(
+        <VGroupStrip
+          {...defaultProps}
+          offsetDb={-6}
+          onOffsetChange={onOffsetChange}
+        />
+      );
+
+      fireEvent.click(screen.getByTitle('Decrease offset'));
+
+      expect(onOffsetChange).toHaveBeenCalledWith(-7);
     });
   });
 
   describe('mute button', () => {
     it('renders mute button when showMute is true', () => {
       render(<VGroupStrip {...defaultProps} showMute={true} />);
-      expect(screen.getByRole('button', { name: 'MUTE' })).toBeInTheDocument();
+      expect(screen.getByText('M')).toBeInTheDocument();
     });
 
     it('hides mute button when showMute is false', () => {
       render(<VGroupStrip {...defaultProps} showMute={false} />);
-      expect(screen.queryByRole('button', { name: 'MUTE' })).not.toBeInTheDocument();
+      expect(screen.queryByText('M')).not.toBeInTheDocument();
     });
 
     it('mute button has active class when muted', () => {
       render(<VGroupStrip {...defaultProps} muted={true} />);
-      const muteButton = screen.getByRole('button', { name: 'MUTE' });
+      const muteButton = screen.getByText('M');
       expect(muteButton).toHaveClass('active');
     });
 
     it('mute button does not have active class when unmuted', () => {
       render(<VGroupStrip {...defaultProps} muted={false} />);
-      const muteButton = screen.getByRole('button', { name: 'MUTE' });
+      const muteButton = screen.getByText('M');
       expect(muteButton).not.toHaveClass('active');
     });
 
@@ -215,7 +231,7 @@ describe('VGroupStrip', () => {
       const onMuteToggle = vi.fn();
       render(<VGroupStrip {...defaultProps} muted={false} onMuteToggle={onMuteToggle} />);
 
-      fireEvent.click(screen.getByRole('button', { name: 'MUTE' }));
+      fireEvent.click(screen.getByText('M'));
 
       expect(onMuteToggle).toHaveBeenCalledWith(true);
     });
@@ -224,7 +240,7 @@ describe('VGroupStrip', () => {
       const onMuteToggle = vi.fn();
       render(<VGroupStrip {...defaultProps} muted={true} onMuteToggle={onMuteToggle} />);
 
-      fireEvent.click(screen.getByRole('button', { name: 'MUTE' }));
+      fireEvent.click(screen.getByText('M'));
 
       expect(onMuteToggle).toHaveBeenCalledWith(false);
     });
@@ -233,42 +249,42 @@ describe('VGroupStrip', () => {
   describe('solo button', () => {
     it('renders solo button when showMute is true', () => {
       render(<VGroupStrip {...defaultProps} showMute={true} />);
-      expect(screen.getByRole('button', { name: 'SOLO' })).toBeInTheDocument();
+      expect(screen.getByText('S')).toBeInTheDocument();
     });
 
     it('solo button is enabled when showSolo is true', () => {
       render(<VGroupStrip {...defaultProps} showSolo={true} />);
-      const soloButton = screen.getByRole('button', { name: 'SOLO' });
+      const soloButton = screen.getByText('S');
       expect(soloButton).not.toBeDisabled();
     });
 
     it('solo button is disabled when showSolo is false', () => {
       render(<VGroupStrip {...defaultProps} showSolo={false} />);
-      const soloButton = screen.getByRole('button', { name: 'SOLO' });
+      const soloButton = screen.getByText('S');
       expect(soloButton).toBeDisabled();
     });
 
     it('solo button has title when disabled', () => {
       render(<VGroupStrip {...defaultProps} showSolo={false} />);
-      const soloButton = screen.getByRole('button', { name: 'SOLO' });
+      const soloButton = screen.getByText('S');
       expect(soloButton).toHaveAttribute('title', 'Solo only on Main Mix');
     });
 
-    it('solo button has no title when enabled', () => {
+    it('solo button has title when enabled', () => {
       render(<VGroupStrip {...defaultProps} showSolo={true} />);
-      const soloButton = screen.getByRole('button', { name: 'SOLO' });
-      expect(soloButton).toHaveAttribute('title', '');
+      const soloButton = screen.getByText('S');
+      expect(soloButton).toHaveAttribute('title', 'Solo');
     });
 
     it('solo button has active class when solo is true', () => {
       render(<VGroupStrip {...defaultProps} solo={true} />);
-      const soloButton = screen.getByRole('button', { name: 'SOLO' });
+      const soloButton = screen.getByText('S');
       expect(soloButton).toHaveClass('active');
     });
 
     it('solo button does not have active class when solo is false', () => {
       render(<VGroupStrip {...defaultProps} solo={false} />);
-      const soloButton = screen.getByRole('button', { name: 'SOLO' });
+      const soloButton = screen.getByText('S');
       expect(soloButton).not.toHaveClass('active');
     });
 
@@ -276,7 +292,7 @@ describe('VGroupStrip', () => {
       const onSoloToggle = vi.fn();
       render(<VGroupStrip {...defaultProps} solo={false} onSoloToggle={onSoloToggle} />);
 
-      fireEvent.click(screen.getByRole('button', { name: 'SOLO' }));
+      fireEvent.click(screen.getByText('S'));
 
       expect(onSoloToggle).toHaveBeenCalledWith(true);
     });
@@ -285,7 +301,7 @@ describe('VGroupStrip', () => {
       const onSoloToggle = vi.fn();
       render(<VGroupStrip {...defaultProps} solo={true} onSoloToggle={onSoloToggle} />);
 
-      fireEvent.click(screen.getByRole('button', { name: 'SOLO' }));
+      fireEvent.click(screen.getByText('S'));
 
       expect(onSoloToggle).toHaveBeenCalledWith(false);
     });
@@ -294,34 +310,36 @@ describe('VGroupStrip', () => {
   describe('visibility toggle', () => {
     it('shows visibility toggle when showVisibilityToggle is true', () => {
       render(<VGroupStrip {...defaultProps} showVisibilityToggle={true} />);
-      expect(screen.getByRole('button', { name: 'HIDE' })).toBeInTheDocument();
+      expect(screen.getByTitle('Hide channels')).toBeInTheDocument();
     });
 
     it('hides visibility toggle when showVisibilityToggle is false', () => {
       render(<VGroupStrip {...defaultProps} showVisibilityToggle={false} />);
-      expect(screen.queryByRole('button', { name: 'HIDE' })).not.toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: 'SHOW' })).not.toBeInTheDocument();
+      expect(screen.queryByTitle('Hide channels')).not.toBeInTheDocument();
+      expect(screen.queryByTitle('Show channels')).not.toBeInTheDocument();
     });
 
-    it('shows HIDE when isVisible is true', () => {
+    it('shows − when isVisible is true', () => {
       render(<VGroupStrip {...defaultProps} isVisible={true} showVisibilityToggle={true} />);
-      expect(screen.getByRole('button', { name: 'HIDE' })).toBeInTheDocument();
+      const button = screen.getByTitle('Hide channels');
+      expect(button).toHaveTextContent('−');
     });
 
-    it('shows SHOW when isVisible is false', () => {
+    it('shows + when isVisible is false', () => {
       render(<VGroupStrip {...defaultProps} isVisible={false} showVisibilityToggle={true} />);
-      expect(screen.getByRole('button', { name: 'SHOW' })).toBeInTheDocument();
+      const button = screen.getByTitle('Show channels');
+      expect(button).toHaveTextContent('+');
     });
 
     it('has active class when visible', () => {
       render(<VGroupStrip {...defaultProps} isVisible={true} showVisibilityToggle={true} />);
-      const button = screen.getByRole('button', { name: 'HIDE' });
+      const button = screen.getByTitle('Hide channels');
       expect(button).toHaveClass('active');
     });
 
     it('does not have active class when not visible', () => {
       render(<VGroupStrip {...defaultProps} isVisible={false} showVisibilityToggle={true} />);
-      const button = screen.getByRole('button', { name: 'SHOW' });
+      const button = screen.getByTitle('Show channels');
       expect(button).not.toHaveClass('active');
     });
 
@@ -335,7 +353,7 @@ describe('VGroupStrip', () => {
         />
       );
 
-      fireEvent.click(screen.getByRole('button', { name: 'HIDE' }));
+      fireEvent.click(screen.getByTitle('Hide channels'));
 
       expect(onVisibilityToggle).toHaveBeenCalled();
     });
@@ -400,13 +418,13 @@ describe('VGroupStrip', () => {
     it('applies compact class when compact is true', () => {
       const { container } = render(<VGroupStrip {...defaultProps} compact={true} />);
       const card = container.querySelector('.channel-card');
-      expect(card).toHaveClass('channel-card-simple');
+      expect(card).toHaveClass('channel-card-compact');
     });
 
     it('does not apply compact class when compact is false', () => {
       const { container } = render(<VGroupStrip {...defaultProps} compact={false} />);
       const card = container.querySelector('.channel-card');
-      expect(card).not.toHaveClass('channel-card-simple');
+      expect(card).not.toHaveClass('channel-card-compact');
     });
   });
 
@@ -421,86 +439,6 @@ describe('VGroupStrip', () => {
       const { container } = render(<VGroupStrip {...defaultProps} showGlobalIndicator={false} />);
       const footer = container.querySelector('.strip-footer');
       expect(footer).not.toHaveClass('strip-footer-global');
-    });
-  });
-
-  describe('simple controls visibility toggle', () => {
-    it('shows visibility toggle in simple controls mode', () => {
-      render(
-        <VGroupStrip
-          {...defaultProps}
-          simpleControls={true}
-          showVisibilityToggle={true}
-          isVisible={true}
-        />
-      );
-      expect(screen.getByRole('button', { name: 'HIDE' })).toBeInTheDocument();
-    });
-
-    it('hides visibility toggle in simple controls mode when showVisibilityToggle is false', () => {
-      render(
-        <VGroupStrip
-          {...defaultProps}
-          simpleControls={true}
-          showVisibilityToggle={false}
-        />
-      );
-      expect(screen.queryByRole('button', { name: 'HIDE' })).not.toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: 'SHOW' })).not.toBeInTheDocument();
-    });
-  });
-
-  describe('simple controls mute/solo', () => {
-    it('mute M button toggles mute in simple mode', () => {
-      const onMuteToggle = vi.fn();
-      render(
-        <VGroupStrip
-          {...defaultProps}
-          simpleControls={true}
-          muted={false}
-          onMuteToggle={onMuteToggle}
-        />
-      );
-
-      fireEvent.click(screen.getByRole('button', { name: 'M' }));
-
-      expect(onMuteToggle).toHaveBeenCalledWith(true);
-    });
-
-    it('solo S button toggles solo in simple mode', () => {
-      const onSoloToggle = vi.fn();
-      render(
-        <VGroupStrip
-          {...defaultProps}
-          simpleControls={true}
-          solo={false}
-          onSoloToggle={onSoloToggle}
-        />
-      );
-
-      fireEvent.click(screen.getByRole('button', { name: 'S' }));
-
-      expect(onSoloToggle).toHaveBeenCalledWith(true);
-    });
-
-    it('solo S button is disabled when showSolo is false in simple mode', () => {
-      render(
-        <VGroupStrip {...defaultProps} simpleControls={true} showSolo={false} />
-      );
-      const soloButton = screen.getByRole('button', { name: 'S' });
-      expect(soloButton).toBeDisabled();
-    });
-
-    it('M button has active class when muted in simple mode', () => {
-      render(<VGroupStrip {...defaultProps} simpleControls={true} muted={true} />);
-      const muteButton = screen.getByRole('button', { name: 'M' });
-      expect(muteButton).toHaveClass('active');
-    });
-
-    it('S button has active class when soloed in simple mode', () => {
-      render(<VGroupStrip {...defaultProps} simpleControls={true} solo={true} />);
-      const soloButton = screen.getByRole('button', { name: 'S' });
-      expect(soloButton).toHaveClass('active');
     });
   });
 
@@ -537,9 +475,9 @@ describe('VGroupStrip', () => {
       };
 
       expect(() => {
-        const { container } = render(<VGroupStrip {...props} />);
-        fireEvent.click(screen.getByRole('button', { name: 'MUTE' }));
-        fireEvent.click(screen.getByRole('button', { name: 'SOLO' }));
+        render(<VGroupStrip {...props} />);
+        fireEvent.click(screen.getByText('M'));
+        fireEvent.click(screen.getByText('S'));
         fireEvent.change(screen.getByRole('slider'), { target: { value: '5' } });
         fireEvent.change(screen.getByRole('combobox'), { target: { value: 'ignore-inf' } });
       }).not.toThrow();

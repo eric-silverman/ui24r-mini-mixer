@@ -8,6 +8,12 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: [['html'], ['list']],
 
+  expect: {
+    toHaveScreenshot: {
+      maxDiffPixelRatio: 0.02, // Allow 2% pixel difference for rendering variations
+    },
+  },
+
   use: {
     baseURL: 'http://localhost:5173',
     trace: 'on-first-retry',

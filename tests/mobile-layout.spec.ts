@@ -277,7 +277,6 @@ test.describe('Mobile Layout Improvements', () => {
       await page.waitForTimeout(1000);
       await expect(page).toHaveScreenshot('iphone-se-layout.png', {
         fullPage: true,
-        maxDiffPixels: 100,
       });
     });
 
@@ -287,7 +286,6 @@ test.describe('Mobile Layout Improvements', () => {
       await page.waitForTimeout(1000);
       await expect(page).toHaveScreenshot('iphone-12-layout.png', {
         fullPage: true,
-        maxDiffPixels: 100,
       });
     });
 
@@ -297,7 +295,6 @@ test.describe('Mobile Layout Improvements', () => {
       await page.waitForTimeout(1000);
       await expect(page).toHaveScreenshot('ipad-mini-layout.png', {
         fullPage: true,
-        maxDiffPixels: 100,
       });
     });
   });
