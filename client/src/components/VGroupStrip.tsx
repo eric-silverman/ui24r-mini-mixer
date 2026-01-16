@@ -15,11 +15,13 @@ type Props = {
   isVisible: boolean;
   compact: boolean;
   showGlobalIndicator: boolean;
+  showEditButton?: boolean;
   onOffsetChange: (next: number) => void;
   onModeChange: (nextMode: ChannelSection['mode']) => void;
   onMuteToggle: (nextMuted: boolean) => void;
   onSoloToggle: (nextSolo: boolean) => void;
   onVisibilityToggle: () => void;
+  onEdit?: () => void;
   dragHandleProps?: HTMLAttributes<HTMLDivElement> & { draggable?: boolean };
 };
 
@@ -57,11 +59,13 @@ export default function VGroupStrip({
   isVisible,
   compact,
   showGlobalIndicator,
+  showEditButton,
   onOffsetChange,
   onModeChange,
   onMuteToggle,
   onSoloToggle,
   onVisibilityToggle,
+  onEdit,
   dragHandleProps,
 }: Props) {
   const meterHeight = useMemo(() => {
@@ -79,7 +83,17 @@ export default function VGroupStrip({
   return (
     <div className={`channel-card vgroup-strip-card ${compact ? 'channel-card-compact' : ''}`}>
       <div className="strip-header">
-        <div className="strip-id-row strip-id-row-centered">
+        <div className="strip-id-row strip-id-row-vgroup">
+          {showEditButton && (
+            <button
+              type="button"
+              className="vgroup-edit-button"
+              onClick={onEdit}
+              title="Edit V-Group"
+            >
+              ✎
+            </button>
+          )}
           <div
             className={`strip-id vgroup-strip-title ${
               dragHandleProps ? 'strip-drag-handle' : ''
@@ -88,6 +102,16 @@ export default function VGroupStrip({
           >
             {title}
           </div>
+          {showVisibilityToggle && (
+            <button
+              type="button"
+              className={`vgroup-expand-button ${isVisible ? 'active' : ''}`}
+              onClick={onVisibilityToggle}
+              title={isVisible ? 'Collapse group' : 'Expand group'}
+            >
+              {isVisible ? '−' : '+'}
+            </button>
+          )}
         </div>
         <div className="strip-display-row">
           <div className="strip-display">
@@ -115,16 +139,6 @@ export default function VGroupStrip({
           >
             S
           </button>
-          {showVisibilityToggle && (
-            <button
-              type="button"
-              className={`show-button ${isVisible ? 'active' : ''}`}
-              onClick={onVisibilityToggle}
-              title={isVisible ? 'Hide channels' : 'Show channels'}
-            >
-              {isVisible ? '−' : '+'}
-            </button>
-          )}
         </div>
       )}
 

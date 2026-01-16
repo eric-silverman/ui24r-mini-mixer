@@ -263,7 +263,6 @@ function normalizeLayout(sections: ChannelSection[], channelIds: number[]): Chan
 
   // All Channels section includes ALL channels, with favorites sorted to the front
   const favoriteIds = new Set(favorites.channelIds);
-  const existingOthers = Array.isArray(others.channelIds) ? others.channelIds : [];
   const seen = new Set<number>();
   const nextOthers: number[] = [];
 
@@ -275,17 +274,11 @@ function normalizeLayout(sections: ChannelSection[], channelIds: number[]): Chan
     }
   });
 
-  // Then add existing others order (for non-favorites)
-  existingOthers.forEach(id => {
-    if (allowed.has(id) && !seen.has(id)) {
-      seen.add(id);
-      nextOthers.push(id);
-    }
-  });
-
-  // Finally add any remaining channels not yet included
+  // Then add non-favorites in channel ID order (natural order)
+  // This ensures unfavorited channels return to their original position
   channelIds.forEach(id => {
     if (!seen.has(id)) {
+      seen.add(id);
       nextOthers.push(id);
     }
   });
@@ -2059,19 +2052,33 @@ export default function App() {
     () => new Map(state.channels.map(channel => [channel.id, channel])),
     [state.channels]
   );
-  const layoutSectionsWithChannels = useMemo(
-    () =>
-      normalizedLayout
-        .map(section => ({
+  const layoutSectionsWithChannels = useMemo(() => {
+    // Find channels that are in local V-Groups (exclude from "All Channels")
+    const channelsInLocalGroups = new Set<number>();
+    normalizedLayout.forEach(section => {
+      if (section.id !== FAVORITES_ID && section.id !== OTHERS_ID && (section.enabled ?? true)) {
+        section.channelIds.forEach(id => channelsInLocalGroups.add(id));
+      }
+    });
+
+    return normalizedLayout
+      .map(section => {
+        // For "All Channels", filter out channels that are in V-Groups
+        const channelIds =
+          section.id === OTHERS_ID
+            ? section.channelIds.filter(id => !channelsInLocalGroups.has(id))
+            : section.channelIds;
+
+        return {
           ...section,
           groupType: 'local' as const,
-          channels: section.channelIds
+          channels: channelIds
             .map(id => channelsById.get(id))
             .filter((channel): channel is NonNullable<typeof channel> => !!channel),
-        }))
-        .filter(section => section.enabled ?? true),
-    [normalizedLayout, channelsById]
-  );
+        };
+      })
+      .filter(section => section.enabled ?? true);
+  }, [normalizedLayout, channelsById]);
   const globalGroupsWithChannels = useMemo(
     () =>
       normalizedGlobalGroups
@@ -2191,7 +2198,9 @@ export default function App() {
     showVisibilityToggle: boolean,
     isVisible: boolean,
     onVisibilityToggle: () => void,
-    dragHandleProps?: HTMLAttributes<HTMLDivElement> & { draggable?: boolean }
+    dragHandleProps?: HTMLAttributes<HTMLDivElement> & { draggable?: boolean },
+    showEditButton?: boolean,
+    onEdit?: () => void
   ) => (
     <VGroupStrip
       title={title}
@@ -2206,11 +2215,13 @@ export default function App() {
       isVisible={isVisible}
       compact={false}
       showGlobalIndicator={showGlobalIndicator}
+      showEditButton={showEditButton}
       onOffsetChange={onChange}
       onModeChange={onModeChange}
       onMuteToggle={next => handleVGroupMute(channelIdsForGroup, next)}
       onSoloToggle={next => handleVGroupSolo(channelIdsForGroup, next)}
       onVisibilityToggle={onVisibilityToggle}
+      onEdit={onEdit}
       dragHandleProps={dragHandleProps}
     />
   );
@@ -2316,12 +2327,13 @@ export default function App() {
     }
 
     const section = item.group;
-    const hasSectionControls =
-      activeBus.type === 'aux' &&
+    const isLocalVGroup =
       section.groupType === 'local' &&
       section.id !== FAVORITES_ID &&
       section.id !== OTHERS_ID;
+    const hasSectionControls = false; // Removed - edit is now via pencil icon on VGroupStrip
     const isOther = section.groupType === 'local' && section.id === OTHERS_ID;
+    const showSectionHeader = !isLocalVGroup; // Hide header for local V-Groups
     const canDragGroup = true;
     const canAcceptDrop = true; // All visible sections can accept drops
     const isSpilled = isGroupSpilled(section.groupType, section.id);
@@ -2336,97 +2348,99 @@ export default function App() {
         key={targetKey}
         className={`section-stack ${isDropTarget ? 'mix-drop-target' : ''}`}
       >
-        <div
-          className={`section-header section-header-board ${
-            hasSectionControls ? '' : 'section-header-no-actions'
-          }`}
-          draggable={canDragGroup}
-          onDragStart={event => {
-            if (!canDragGroup) {
-              return;
-            }
-            handleGroupDragStart(event, section.groupType, section.id);
-          }}
-          onDragEnd={() => {
-            groupDragRef.current = null;
-            setMixDropTarget(null);
-          }}
-          onDragOver={event => {
-            if (!canAcceptDrop || !isMixItemDragEvent(event)) {
-              return;
-            }
-            const payload = getActiveMixDrag(event);
-            if (!payload) {
-              return;
-            }
-            event.preventDefault();
-            setMixDropTarget({
-              itemType: 'group',
-              groupType: section.groupType,
-              groupId: section.id,
-              position: 'before',
-            });
-          }}
-          onDragEnter={event => {
-            if (!canAcceptDrop || !isMixItemDragEvent(event)) {
-              return;
-            }
-            const payload = getActiveMixDrag(event);
-            if (!payload) {
-              return;
-            }
-            event.preventDefault();
-            setMixDropTarget({
-              itemType: 'group',
-              groupType: section.groupType,
-              groupId: section.id,
-              position: 'before',
-            });
-          }}
-          onDragLeave={event => {
-            if (event.currentTarget.contains(event.relatedTarget as Node)) {
-              return;
-            }
-            setMixDropTarget(null);
-          }}
-          onDrop={event => {
-            if (!canAcceptDrop || !isMixItemDragEvent(event)) {
-              return;
-            }
-            event.preventDefault();
-            event.stopPropagation();
-            const payload = getActiveMixDrag(event);
-            groupDragRef.current = null;
-            channelItemDragRef.current = null;
-            setMixDropTarget(null);
-            if (!payload) {
-              return;
-            }
-            handleMixDrop(payload, targetKey, 'before');
-          }}
-        >
-          <div className="section-title">{section.name}</div>
-          <div className="section-controls">
-            {hasSectionControls && (
-              <div className="section-actions">
-                <button
-                  className="section-button"
-                  type="button"
-                  onClick={() => handleRenameSection(section.id)}
-                >
-                  Rename
-                </button>
-                <button
-                  className="section-button"
-                  type="button"
-                  onClick={() => handleRemoveSection(section.id)}
-                >
-                  Remove
-                </button>
-              </div>
-            )}
+        {showSectionHeader && (
+          <div
+            className={`section-header section-header-board ${
+              hasSectionControls ? '' : 'section-header-no-actions'
+            }`}
+            draggable={canDragGroup}
+            onDragStart={event => {
+              if (!canDragGroup) {
+                return;
+              }
+              handleGroupDragStart(event, section.groupType, section.id);
+            }}
+            onDragEnd={() => {
+              groupDragRef.current = null;
+              setMixDropTarget(null);
+            }}
+            onDragOver={event => {
+              if (!canAcceptDrop || !isMixItemDragEvent(event)) {
+                return;
+              }
+              const payload = getActiveMixDrag(event);
+              if (!payload) {
+                return;
+              }
+              event.preventDefault();
+              setMixDropTarget({
+                itemType: 'group',
+                groupType: section.groupType,
+                groupId: section.id,
+                position: 'before',
+              });
+            }}
+            onDragEnter={event => {
+              if (!canAcceptDrop || !isMixItemDragEvent(event)) {
+                return;
+              }
+              const payload = getActiveMixDrag(event);
+              if (!payload) {
+                return;
+              }
+              event.preventDefault();
+              setMixDropTarget({
+                itemType: 'group',
+                groupType: section.groupType,
+                groupId: section.id,
+                position: 'before',
+              });
+            }}
+            onDragLeave={event => {
+              if (event.currentTarget.contains(event.relatedTarget as Node)) {
+                return;
+              }
+              setMixDropTarget(null);
+            }}
+            onDrop={event => {
+              if (!canAcceptDrop || !isMixItemDragEvent(event)) {
+                return;
+              }
+              event.preventDefault();
+              event.stopPropagation();
+              const payload = getActiveMixDrag(event);
+              groupDragRef.current = null;
+              channelItemDragRef.current = null;
+              setMixDropTarget(null);
+              if (!payload) {
+                return;
+              }
+              handleMixDrop(payload, targetKey, 'before');
+            }}
+          >
+            <div className="section-title">{section.name}</div>
+            <div className="section-controls">
+              {hasSectionControls && (
+                <div className="section-actions">
+                  <button
+                    className="section-button"
+                    type="button"
+                    onClick={() => handleRenameSection(section.id)}
+                  >
+                    Rename
+                  </button>
+                  <button
+                    className="section-button"
+                    type="button"
+                    onClick={() => handleRemoveSection(section.id)}
+                  >
+                    Remove
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
         <div
           className={`channel-section ${isOther ? 'channel-section-simple' : ''} ${
             isSpilled ? 'channel-section-spilled' : 'channel-section-collapsed'
@@ -2493,7 +2507,9 @@ export default function App() {
                         groupDragRef.current = null;
                         setMixDropTarget(null);
                       },
-                    }
+                    },
+                    true, // showEditButton
+                    () => handleRenameSection(section.id) // onEdit
                   )}
             </div>
           )}
@@ -3177,10 +3193,6 @@ export default function App() {
               </div>
             </div>
           </div>
-          <ChannelMinimap
-            channels={minimapChannels}
-            scrollContainerRef={mixBoardRef}
-          />
           <div
             ref={mixBoardRef}
             className={`mix-board-row ${
@@ -3244,6 +3256,10 @@ export default function App() {
             })}
             {renderMixDropSlot('__end__')}
           </div>
+          <ChannelMinimap
+            channels={minimapChannels}
+            scrollContainerRef={mixBoardRef}
+          />
         </div>
       ) : (
         <div className="sections-shell">
@@ -3256,10 +3272,6 @@ export default function App() {
               </div>
             </div>
           </div>
-          <ChannelMinimap
-            channels={minimapChannels}
-            scrollContainerRef={mixBoardRef}
-          />
           <div
             ref={mixBoardRef}
             className={`mix-board-row ${
@@ -3323,6 +3335,10 @@ export default function App() {
             })}
             {renderMixDropSlot('__end__')}
           </div>
+          <ChannelMinimap
+            channels={minimapChannels}
+            scrollContainerRef={mixBoardRef}
+          />
         </div>
       )}
     </div>

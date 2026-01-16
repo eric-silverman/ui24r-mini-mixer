@@ -1,71 +1,84 @@
-# UI Feedback & Roadmap
+# UI24R Mini Mixer - Feedback & Roadmap
 
-Feedback from drummer on simplifying the UI to reduce visual clutter and improve mobile UX.
+## Phase 1: Quick Wins & Polish
 
-## Phase 1: Quick Wins ✅ COMPLETED
+### 1.1 Disable Mobile Zoom
+- Prevent pinch-to-zoom on mobile to avoid accidental zooming during fader control
+- Add appropriate viewport meta tags
 
-| Change | Status |
-|--------|--------|
-| Remove Bottom Bar - Integrate +/- steppers directly into channel strips, always visible | ✅ Done |
-| Rename "My Channels" → "Favorites" | ✅ Done |
-| Shorten Mute/Solo → M/S | ✅ Done |
-| Remove "Assign to me" button (dropdown solves this) | ✅ Done |
-| Add icons to action buttons (+ for new, ↻ for refresh) | ✅ Done |
+### 1.2 Minimap Viewport Sync
+- When tapping on minimap track, move viewport indicator immediately (not waiting for scroll animation)
+- Currently indicator waits until hscroll completes
 
-## Phase 2: Middle Bar Consolidation ✅ COMPLETED
-
-| Change | Status |
-|--------|--------|
-| Convert Main Mix / Gain / AUX Sends into single dropdown | ✅ Done |
-| Keep V-Groups as separate toggleable section | ✅ Done |
-| Simplify Top Bar - compact brand, icon buttons | ✅ Done |
-| Sample data only via URL param (not in dev by default) | ✅ Done |
-
-**Goal:** The mode selection (Main Mix, Gain, AUX sends) is THE primary context. It should be a single, prominent dropdown rather than multiple button rows.
-
-## Phase 3: Channel Strip Optimization ✅ COMPLETED
-
-| Change | Status |
-|--------|--------|
-| Narrow channel strips - Tighter padding, smaller labels | ✅ Done |
-| Remove drag handles on mobile (keep on desktop) | ✅ Done |
-| Add minimap scrollbar - Birds-eye view of all channels with position indicator | ✅ Done |
-
-**Goal:** Make channel strips narrower so more fit on screen. The minimap would show a zoomed-out view of all faders, helping users navigate long channel lists quickly.
-
-## Phase 4: Favorites vs V-Groups Rethink ✅ COMPLETED
-
-| Change | Status |
-|--------|--------|
-| Remove "Favorites" as a V-Group with master slider | ✅ Done |
-| Add pin/star icon to individual channels | ✅ Done |
-| Pinned channels appear at front of "All Channels" | ✅ Done |
-
-**Goal:** Simplify the mental model. Instead of "Favorites" being a special V-Group, let users pin individual channels to the front. V-Groups remain for actual group control with master faders.
+### 1.3 Aux Send Dropdown Size (Mobile)
+- Make mix select dropdown edge-to-edge on mobile
+- Prevent confusion about which channel is being edited
 
 ---
 
-## Original Feedback Notes
+## Phase 2: Channel Organization
 
-### Top Bar
-- "Do you really need any of this in the final product?"
+### 2.1 Unstar Channel Ordering
+- When a channel is unpinned/unstarred, return it to its original channel order position
+- Currently it may stay at end of list
 
-### Middle Bar
-- "These can all be put into a dropdown with the exception of V-groups"
-- "You only want to choose one at a time from Main Mix, Gain, AUX Sends"
-- "This is like THE primary menu item you need, it's the context of the channels below"
+### 2.2 V-Group Channel Deduplication
+- When a channel is added to a V-Group, hide it from "All Channels" section
+- Prevents duplicate channel strips appearing
 
-### Bottom Bar
-- "You def don't need this one at all"
-- "Simple Controls toggle can just not exist, instead just put the +/- under faders so they're always visible"
+---
 
-### Channel Strip
-- "Each channel is kind of wide, simplify to see more"
-- "Most important things are a nice easy to drag handle and a visible signal line"
-- "It would be super rad if you could implement a scroll bar that was like a zoomed out view of the fader strip. DAWs usually have this."
-- "The dragging is cool on web but I don't think anyone's gonna do that on mobile"
+## Phase 3: V-Group UX Overhaul
 
-### Favorites/V-Groups
-- "Instead of My Channels, 'Favorites' or 'Starred' is clearer"
-- "My Channels group and V-Groups are kinda conflated"
-- "What if you got rid of My Channels and just had a pin icon to pin it to the front of All Channels, then just had V-Groups with master sliders?"
+### 3.1 Remove Section Header Bar
+- Kill the bar above channels showing "Other" or V-Group name
+- Currently wastes vertical space and looks odd
+
+### 3.2 V-Group Edit via Pencil Icon
+- Add pencil icon on V-Group strip (top left)
+- Opens modal for: rename, change channels, remove group
+- Eliminates confusing "Rename"/"Remove" buttons far from title
+
+### 3.3 V-Group Visual Distinction
+- Channels inside a V-Group should have slightly darker background
+- Makes group boundaries clear
+
+### 3.4 V-Group Strip Width
+- Make V-Group channel strip skinnier (currently too wide)
+
+### 3.5 Expand/Collapse Button Position
+- Move the +/- expand button to top right of V-Group strip
+- Currently next to Mute/Solo buttons which is confusing
+
+---
+
+## Phase 4: Minimap Enhancement
+
+### 4.1 Move Minimap to Bottom
+- Relocate miniscroll underneath channel strips (very bottom)
+- Better visual flow
+
+### 4.2 Dual-Layer Fader + Signal Display
+- Gray background bar showing fader position
+- Overlaid signal/amplitude with gradient (like VU meter)
+- Helps users understand minimap represents channels
+
+### 4.3 Channel Labels in Minimap
+- Show 2-letter abbreviation of channel name in each bar
+- Provides grounding/context for what each bar represents
+
+---
+
+## Phase 5: API Investigation
+
+### 5.1 Solo on Aux Bus
+- Investigate: Does UI24R API support soloing channels on aux sends?
+- If yes: Re-add Solo button in aux send mode
+- Currently Solo is hidden on aux buses (e.g., "Drummer" mix)
+
+---
+
+## Status Legend
+- [ ] Not started
+- [x] Completed
+- [~] In progress

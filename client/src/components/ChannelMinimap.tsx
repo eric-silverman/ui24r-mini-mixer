@@ -6,6 +6,16 @@ type Props = {
   scrollContainerRef: React.RefObject<HTMLDivElement>;
 };
 
+// Get 2-letter abbreviation for a channel
+function getChannelAbbr(channel: ChannelState): string {
+  const name = channel.name || channel.label || '';
+  if (name.length === 0) {
+    return String(channel.id).padStart(2, '0');
+  }
+  // Use first 2 characters, uppercase
+  return name.slice(0, 2).toUpperCase();
+}
+
 export default function ChannelMinimap({ channels, scrollContainerRef }: Props) {
   const minimapRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -74,7 +84,8 @@ export default function ChannelMinimap({ channels, scrollContainerRef }: Props) 
       if ((event.target as HTMLElement).classList.contains('minimap-viewport')) {
         return;
       }
-      scrollToPosition(event.clientX, true);
+      // Use instant scroll so viewport indicator moves immediately
+      scrollToPosition(event.clientX, false);
     },
     [scrollToPosition]
   );
@@ -150,14 +161,34 @@ export default function ChannelMinimap({ channels, scrollContainerRef }: Props) 
     >
       <div className="minimap-track">
         {/* Render mini fader bars for each channel */}
-        {channels.map((channel) => (
-          <div
-            key={channel.id}
-            className={`minimap-fader ${channel.muted ? 'minimap-fader-muted' : ''}`}
-            style={{ height: `${Math.max(5, channel.fader * 100)}%` }}
-            title={channel.name || channel.label || `CH ${channel.id}`}
-          />
-        ))}
+        {channels.map((channel) => {
+          const faderHeight = Math.max(5, channel.fader * 100);
+          // Signal is clamped to fader height (can't exceed fader position)
+          const signalHeight = Math.min(
+            faderHeight,
+            Math.max(0, (channel.meterPostFader ?? 0) * 100)
+          );
+          return (
+            <div
+              key={channel.id}
+              className={`minimap-channel ${channel.muted ? 'minimap-channel-muted' : ''}`}
+              title={channel.name || channel.label || `CH ${channel.id}`}
+            >
+              {/* Gray background showing fader position */}
+              <div
+                className="minimap-fader-bg"
+                style={{ height: `${faderHeight}%` }}
+              />
+              {/* Colored signal overlay */}
+              <div
+                className="minimap-signal"
+                style={{ height: `${signalHeight}%` }}
+              />
+              {/* Channel label */}
+              <span className="minimap-label">{getChannelAbbr(channel)}</span>
+            </div>
+          );
+        })}
       </div>
       {/* Viewport indicator - draggable */}
       {canScroll && (

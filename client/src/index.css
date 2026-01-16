@@ -39,6 +39,7 @@ body {
   /* Mobile touch optimizations */
   -webkit-tap-highlight-color: rgba(240, 210, 106, 0.2);
   -webkit-touch-callout: none;
+  touch-action: pan-x pan-y; /* Prevent pinch zoom while allowing scroll */
 }
 
 
@@ -1239,6 +1240,71 @@ body {
 
 .vgroup-strip-title {
   color: var(--accent-2);
+  flex: 1;
+  text-align: center;
+}
+
+.strip-id-row-vgroup {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  justify-content: center;
+}
+
+.vgroup-edit-button {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  opacity: 0.6;
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+.vgroup-edit-button:hover {
+  opacity: 1;
+  color: var(--accent-2);
+}
+
+.vgroup-expand-button {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.vgroup-expand-button:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.vgroup-expand-button.active {
+  background: rgba(255, 223, 120, 0.2);
+  border-color: rgba(255, 223, 120, 0.3);
+  color: var(--accent-2);
+}
+
+/* Skinnier V-Group strip */
+.vgroup-strip-card {
+  max-width: 90px;
+}
+
+/* Darker background for channels inside V-Groups */
+.channel-section:not(.channel-section-simple) .channel-grid .channel-card {
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0.1) 100%),
+    linear-gradient(180deg, #2c313b 0%, #171b22 100%);
 }
 
 .strip-drag-handle {
@@ -1805,17 +1871,56 @@ body {
   gap: 1px;
 }
 
-.minimap-fader {
+.minimap-channel {
   flex: 1;
   min-width: 2px;
-  background: linear-gradient(180deg, #4bffb1 0%, #1d8055 100%);
-  border-radius: 1px;
-  transition: height 0.1s ease-out;
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
 }
 
-.minimap-fader-muted {
+.minimap-fader-bg {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 1px;
+  transition: height 0.15s ease-out;
+}
+
+.minimap-signal {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(180deg, #4bffb1 0%, #1d8055 100%);
+  border-radius: 1px;
+  transition: height 0.05s ease-out;
+}
+
+.minimap-channel-muted .minimap-fader-bg {
+  background: rgba(255, 100, 100, 0.2);
+}
+
+.minimap-channel-muted .minimap-signal {
   background: linear-gradient(180deg, #ff6b6b 0%, #8b3a3a 100%);
-  opacity: 0.6;
+  opacity: 0.7;
+}
+
+.minimap-label {
+  position: absolute;
+  bottom: 1px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 7px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: -0.5px;
+  pointer-events: none;
+  white-space: nowrap;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .minimap-viewport {
@@ -2285,6 +2390,8 @@ body {
     font-size: 10px;
     padding: 4px 20px 4px 6px;
     min-height: 28px;
+    flex: 1; /* Take available space on mobile */
+    min-width: 0; /* Allow shrinking */
   }
 
   /* Very compact mode bar */

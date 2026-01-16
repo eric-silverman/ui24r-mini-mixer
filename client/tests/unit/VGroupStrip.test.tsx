@@ -310,36 +310,36 @@ describe('VGroupStrip', () => {
   describe('visibility toggle', () => {
     it('shows visibility toggle when showVisibilityToggle is true', () => {
       render(<VGroupStrip {...defaultProps} showVisibilityToggle={true} />);
-      expect(screen.getByTitle('Hide channels')).toBeInTheDocument();
+      expect(screen.getByTitle('Collapse group')).toBeInTheDocument();
     });
 
     it('hides visibility toggle when showVisibilityToggle is false', () => {
       render(<VGroupStrip {...defaultProps} showVisibilityToggle={false} />);
-      expect(screen.queryByTitle('Hide channels')).not.toBeInTheDocument();
-      expect(screen.queryByTitle('Show channels')).not.toBeInTheDocument();
+      expect(screen.queryByTitle('Collapse group')).not.toBeInTheDocument();
+      expect(screen.queryByTitle('Expand group')).not.toBeInTheDocument();
     });
 
     it('shows − when isVisible is true', () => {
       render(<VGroupStrip {...defaultProps} isVisible={true} showVisibilityToggle={true} />);
-      const button = screen.getByTitle('Hide channels');
+      const button = screen.getByTitle('Collapse group');
       expect(button).toHaveTextContent('−');
     });
 
     it('shows + when isVisible is false', () => {
       render(<VGroupStrip {...defaultProps} isVisible={false} showVisibilityToggle={true} />);
-      const button = screen.getByTitle('Show channels');
+      const button = screen.getByTitle('Expand group');
       expect(button).toHaveTextContent('+');
     });
 
     it('has active class when visible', () => {
       render(<VGroupStrip {...defaultProps} isVisible={true} showVisibilityToggle={true} />);
-      const button = screen.getByTitle('Hide channels');
+      const button = screen.getByTitle('Collapse group');
       expect(button).toHaveClass('active');
     });
 
     it('does not have active class when not visible', () => {
       render(<VGroupStrip {...defaultProps} isVisible={false} showVisibilityToggle={true} />);
-      const button = screen.getByTitle('Show channels');
+      const button = screen.getByTitle('Expand group');
       expect(button).not.toHaveClass('active');
     });
 
@@ -353,7 +353,7 @@ describe('VGroupStrip', () => {
         />
       );
 
-      fireEvent.click(screen.getByTitle('Hide channels'));
+      fireEvent.click(screen.getByTitle('Collapse group'));
 
       expect(onVisibilityToggle).toHaveBeenCalled();
     });
