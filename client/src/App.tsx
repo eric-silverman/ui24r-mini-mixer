@@ -2303,13 +2303,9 @@ export default function App() {
     }
 
     const section = item.group;
-    const isLocalVGroup =
-      section.groupType === 'local' &&
-      section.id !== FAVORITES_ID &&
-      section.id !== OTHERS_ID;
     const hasSectionControls = false; // Removed - edit is now via pencil icon on VGroupStrip
     const isOther = section.groupType === 'local' && section.id === OTHERS_ID;
-    const showSectionHeader = !isLocalVGroup; // Hide header for local V-Groups
+    const showSectionHeader = false; // Section headers removed - group names shown on VGroupStrip
     const canDragGroup = true;
     const canAcceptDrop = true; // All visible sections can accept drops
     const isSpilled = isGroupSpilled(section.groupType, section.id);
