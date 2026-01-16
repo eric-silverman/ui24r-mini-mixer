@@ -1549,25 +1549,6 @@ export default function App() {
     });
   };
 
-  const handleVGroupSolo = (channelIds: number[], solo: boolean) => {
-    if (activeBusRef.current.type !== 'master') {
-      return;
-    }
-    const idSet = new Set(channelIds);
-    setState(current => ({
-      ...current,
-      channels: current.channels.map(channel =>
-        idSet.has(channel.id) ? { ...channel, solo } : channel
-      ),
-    }));
-    if (sampleMode) {
-      return;
-    }
-    channelIds.forEach(channelId => {
-      setSolo('master', 0, channelId, solo).catch(() => undefined);
-    });
-  };
-
   const handleViewOffsetChange = (nextOffset: number) => {
     const currentOffset = viewOffsets[activeBus.type] ?? 0;
     const delta = nextOffset - currentOffset;
@@ -2191,9 +2172,7 @@ export default function App() {
     showModeSelect: boolean,
     channelIdsForGroup: number[],
     muted: boolean,
-    solo: boolean,
     showMute: boolean,
-    showSolo: boolean,
     showGlobalIndicator: boolean,
     showVisibilityToggle: boolean,
     isVisible: boolean,
@@ -2208,9 +2187,7 @@ export default function App() {
       mode={mode}
       showModeSelect={showModeSelect}
       showMute={showMute}
-      showSolo={showSolo}
       muted={muted}
-      solo={solo}
       showVisibilityToggle={showVisibilityToggle}
       isVisible={isVisible}
       compact={false}
@@ -2219,7 +2196,6 @@ export default function App() {
       onOffsetChange={onChange}
       onModeChange={onModeChange}
       onMuteToggle={next => handleVGroupMute(channelIdsForGroup, next)}
-      onSoloToggle={next => handleVGroupSolo(channelIdsForGroup, next)}
       onVisibilityToggle={onVisibilityToggle}
       onEdit={onEdit}
       dragHandleProps={dragHandleProps}
@@ -2458,9 +2434,7 @@ export default function App() {
                     true,
                     section.channelIds,
                     section.channels.some(channel => channel.muted),
-                    section.channels.some(channel => channel.solo),
                     activeBus.type !== 'gain' && section.channelIds.length > 0,
-                    activeBus.type === 'master' && section.channelIds.length > 0,
                     true,
                     true,
                     isGroupSpilled('global', section.id),
@@ -2488,9 +2462,7 @@ export default function App() {
                     true,
                     section.channelIds,
                     section.channels.some(channel => channel.muted),
-                    section.channels.some(channel => channel.solo),
                     activeBus.type !== 'gain' && section.channelIds.length > 0,
-                    activeBus.type === 'master' && section.channelIds.length > 0,
                     false,
                     true,
                     isGroupSpilled('local', section.id),

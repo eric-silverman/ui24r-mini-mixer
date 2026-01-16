@@ -2,7 +2,7 @@
  * VGroupStrip Component Unit Tests
  *
  * Tests for the virtual group strip component including offset display,
- * mode selection, mute/solo buttons, visibility toggle, and fader interaction.
+ * mode selection, mute button, visibility toggle, and fader interaction.
  */
 
 import { describe, it, expect, vi } from 'vitest';
@@ -15,9 +15,7 @@ const defaultProps = {
   mode: 'default' as const,
   showModeSelect: true,
   showMute: true,
-  showSolo: true,
   muted: false,
-  solo: false,
   showVisibilityToggle: true,
   isVisible: true,
   compact: false,
@@ -25,7 +23,6 @@ const defaultProps = {
   onOffsetChange: vi.fn(),
   onModeChange: vi.fn(),
   onMuteToggle: vi.fn(),
-  onSoloToggle: vi.fn(),
   onVisibilityToggle: vi.fn(),
 };
 
@@ -246,67 +243,6 @@ describe('VGroupStrip', () => {
     });
   });
 
-  describe('solo button', () => {
-    it('renders solo button when showMute is true', () => {
-      render(<VGroupStrip {...defaultProps} showMute={true} />);
-      expect(screen.getByText('S')).toBeInTheDocument();
-    });
-
-    it('solo button is enabled when showSolo is true', () => {
-      render(<VGroupStrip {...defaultProps} showSolo={true} />);
-      const soloButton = screen.getByText('S');
-      expect(soloButton).not.toBeDisabled();
-    });
-
-    it('solo button is disabled when showSolo is false', () => {
-      render(<VGroupStrip {...defaultProps} showSolo={false} />);
-      const soloButton = screen.getByText('S');
-      expect(soloButton).toBeDisabled();
-    });
-
-    it('solo button has title when disabled', () => {
-      render(<VGroupStrip {...defaultProps} showSolo={false} />);
-      const soloButton = screen.getByText('S');
-      expect(soloButton).toHaveAttribute('title', 'Solo only on Main Mix');
-    });
-
-    it('solo button has title when enabled', () => {
-      render(<VGroupStrip {...defaultProps} showSolo={true} />);
-      const soloButton = screen.getByText('S');
-      expect(soloButton).toHaveAttribute('title', 'Solo');
-    });
-
-    it('solo button has active class when solo is true', () => {
-      render(<VGroupStrip {...defaultProps} solo={true} />);
-      const soloButton = screen.getByText('S');
-      expect(soloButton).toHaveClass('active');
-    });
-
-    it('solo button does not have active class when solo is false', () => {
-      render(<VGroupStrip {...defaultProps} solo={false} />);
-      const soloButton = screen.getByText('S');
-      expect(soloButton).not.toHaveClass('active');
-    });
-
-    it('calls onSoloToggle with true when solo clicked while not soloed', () => {
-      const onSoloToggle = vi.fn();
-      render(<VGroupStrip {...defaultProps} solo={false} onSoloToggle={onSoloToggle} />);
-
-      fireEvent.click(screen.getByText('S'));
-
-      expect(onSoloToggle).toHaveBeenCalledWith(true);
-    });
-
-    it('calls onSoloToggle with false when solo clicked while soloed', () => {
-      const onSoloToggle = vi.fn();
-      render(<VGroupStrip {...defaultProps} solo={true} onSoloToggle={onSoloToggle} />);
-
-      fireEvent.click(screen.getByText('S'));
-
-      expect(onSoloToggle).toHaveBeenCalledWith(false);
-    });
-  });
-
   describe('visibility toggle', () => {
     it('shows visibility toggle when showVisibilityToggle is true', () => {
       render(<VGroupStrip {...defaultProps} showVisibilityToggle={true} />);
@@ -470,14 +406,12 @@ describe('VGroupStrip', () => {
         onOffsetChange: () => {},
         onModeChange: () => {},
         onMuteToggle: () => {},
-        onSoloToggle: () => {},
         onVisibilityToggle: () => {},
       };
 
       expect(() => {
         render(<VGroupStrip {...props} />);
         fireEvent.click(screen.getByText('M'));
-        fireEvent.click(screen.getByText('S'));
         fireEvent.change(screen.getByRole('slider'), { target: { value: '5' } });
         fireEvent.change(screen.getByRole('combobox'), { target: { value: 'ignore-inf' } });
       }).not.toThrow();

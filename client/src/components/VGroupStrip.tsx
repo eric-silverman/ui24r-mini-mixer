@@ -8,9 +8,7 @@ type Props = {
   mode: ChannelSection['mode'];
   showModeSelect: boolean;
   showMute: boolean;
-  showSolo: boolean;
   muted: boolean;
-  solo: boolean;
   showVisibilityToggle: boolean;
   isVisible: boolean;
   compact: boolean;
@@ -19,7 +17,6 @@ type Props = {
   onOffsetChange: (next: number) => void;
   onModeChange: (nextMode: ChannelSection['mode']) => void;
   onMuteToggle: (nextMuted: boolean) => void;
-  onSoloToggle: (nextSolo: boolean) => void;
   onVisibilityToggle: () => void;
   onEdit?: () => void;
   dragHandleProps?: HTMLAttributes<HTMLDivElement> & { draggable?: boolean };
@@ -52,9 +49,7 @@ export default function VGroupStrip({
   mode,
   showModeSelect,
   showMute,
-  showSolo,
   muted,
-  solo,
   showVisibilityToggle,
   isVisible,
   compact,
@@ -63,7 +58,6 @@ export default function VGroupStrip({
   onOffsetChange,
   onModeChange,
   onMuteToggle,
-  onSoloToggle,
   onVisibilityToggle,
   onEdit,
   dragHandleProps,
@@ -129,15 +123,6 @@ export default function VGroupStrip({
             title="Mute"
           >
             M
-          </button>
-          <button
-            type="button"
-            className={`solo-button ${solo ? 'active' : ''}`}
-            onClick={() => onSoloToggle(!solo)}
-            disabled={!showSolo}
-            title={showSolo ? 'Solo' : 'Solo only on Main Mix'}
-          >
-            S
           </button>
         </div>
       )}
