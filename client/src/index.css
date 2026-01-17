@@ -569,7 +569,7 @@ body {
   gap: 0;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 8px 0 12px;
+  padding: 0 0 12px;
   margin: 0;
   position: relative;
   flex: 1;
@@ -605,38 +605,31 @@ body {
 .sections-shell {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0;
   flex: 1;
   min-height: 0;
 }
 
 .section-stack {
-  display: grid;
-  grid-template-rows: var(--mix-item-header-height) minmax(0, 1fr);
-  gap: 8px;
+  display: flex;
+  flex-direction: column;
   position: relative;
   height: 100%;
   flex: 0 0 122px;
 }
 
 .channel-stack {
-  display: grid;
-  grid-template-rows: var(--mix-item-header-height) minmax(0, 1fr);
-  gap: 8px;
+  display: flex;
+  flex-direction: column;
   position: relative;
   cursor: grab;
   height: 100%;
   flex: 0 0 122px;
 }
 
-.channel-stack::before {
-  content: '';
-  grid-row: 1;
-}
-
 .channel-stack > .channel-item {
-  grid-row: 2;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
 }
 
 
@@ -654,7 +647,7 @@ body {
 }
 
 .section-stack > .channel-section {
-  grid-row: 2;
+  flex: 1;
   min-height: 0;
 }
 
