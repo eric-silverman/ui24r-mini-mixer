@@ -438,6 +438,7 @@ export default function App() {
   const [connectError, setConnectError] = useState('');
   const [sampleMode, setSampleMode] = useState(shouldUseSampleData);
   const sampleModeInitializedRef = useRef(false);
+  const masterSoloRef = useRef<Record<number, boolean>>({});
   const [assignedAuxId, setAssignedAuxId] = useState<number | null>(() => {
     const stored = localStorage.getItem(ASSIGNED_AUX_KEY);
     if (!stored) {
@@ -558,21 +559,40 @@ export default function App() {
     if (sampleMode) {
       // Only build sample state once initially, then let user changes persist
       if (!sampleModeInitializedRef.current) {
-        setState(buildSampleState(activeBus.type, activeBus.id));
+        const initialState = buildSampleState(activeBus.type, activeBus.id);
+        // Initialize solo states from sample data
+        if (activeBus.type === 'master') {
+          initialState.channels.forEach(channel => {
+            if (channel.solo !== undefined) {
+              masterSoloRef.current[channel.id] = channel.solo;
+            }
+          });
+        }
+        setState(initialState);
         sampleModeInitializedRef.current = true;
       } else {
         // Update busType on channels when switching buses in sample mode
-        setState(current => ({
-          ...current,
-          bus: { type: activeBus.type, id: activeBus.id },
-          channels: current.channels.map(channel => ({
-            ...channel,
-            busType: activeBus.type,
-            bus: activeBus.id,
-            // Solo is only supported on master bus
-            solo: activeBus.type === 'master' ? channel.solo : undefined,
-          })),
-        }));
+        setState(current => {
+          // Save solo states when leaving master
+          if (current.bus.type === 'master') {
+            current.channels.forEach(channel => {
+              if (channel.solo !== undefined) {
+                masterSoloRef.current[channel.id] = channel.solo;
+              }
+            });
+          }
+          return {
+            ...current,
+            bus: { type: activeBus.type, id: activeBus.id },
+            channels: current.channels.map(channel => ({
+              ...channel,
+              busType: activeBus.type,
+              bus: activeBus.id,
+              // Solo is only supported on master bus - restore from saved state
+              solo: activeBus.type === 'master' ? (masterSoloRef.current[channel.id] ?? false) : undefined,
+            })),
+          };
+        });
       }
       return;
     }
@@ -1192,6 +1212,8 @@ export default function App() {
     if (activeBusRef.current.type !== 'master') {
       return;
     }
+    // Update the ref so solo state persists across bus switches in sample mode
+    masterSoloRef.current[id] = solo;
     setState(current => ({
       ...current,
       channels: current.channels.map(channel =>
