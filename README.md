@@ -190,6 +190,40 @@ sudo systemctl enable --now ui24r-mini-mixer-update.timer
 
 The update timer checks every 30 minutes and restarts the app when a newer GitHub Release is available.
 
+### 3) Manual updates
+
+**Online (Pi has internet access):**
+
+```sh
+sudo /opt/ui24r-mini-mixer/scripts/pi/update.sh
+```
+
+Add `--force` to reinstall the current version.
+
+**Offline (no internet on Pi):**
+
+1. Download the release tarball from GitHub Releases on your dev machine
+2. Transfer it to the Pi (e.g., via USB drive or `scp`)
+3. Extract and run the update script from the tarball:
+
+```sh
+tar -xzf ui24r-mini-mixer-v1.0.0.tar.gz
+sudo ./ui24r-mini-mixer/scripts/pi/update.sh --file ui24r-mini-mixer-v1.0.0.tar.gz
+```
+
+Running the update script from the extracted tarball ensures you're using the latest update logic, which is useful if the update script itself has changed.
+
+### Creating a release
+
+Releases are built automatically by GitHub Actions when you push a version tag:
+
+```sh
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+The workflow (`.github/workflows/release.yml`) builds the client and server, bundles `node_modules` for offline Pi updates, and uploads the tarball as a release asset.
+
 ### Raspberry Pi setup (new SD card to running app)
 
 1. Flash the SD card (recommended: Raspberry Pi OS Lite 64-bit)
