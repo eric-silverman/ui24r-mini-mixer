@@ -7,13 +7,15 @@ SERVICE_NAME=${SERVICE_NAME:-"ui24r-mini-mixer"}
 ASSET_PREFIX=${ASSET_PREFIX:-"ui24r-mini-mixer"}
 FORCE_UPDATE="0"
 LOCAL_FILE=""
+DIRECT_URL=""
 
 usage() {
   cat <<'EOF'
-Usage: update.sh [--force] [--file <path>]
+Usage: update.sh [--force] [--file <path>] [--url <url>]
 
 Options:
   --file <path>  Install from a local tar.gz file (offline mode).
+  --url <url>    Download and install from a direct URL.
   --force        Reinstall even if already on latest release tag.
   -h, --help     Show this help.
 
@@ -23,6 +25,9 @@ Examples:
 
   # Install from local file (offline)
   sudo ./update.sh --file /path/to/ui24r-mini-mixer-v1.0.0.tar.gz
+
+  # Install from direct URL
+  sudo ./update.sh --url https://github.com/.../ui24r-mini-mixer-v1.0.0.tar.gz
 EOF
 }
 
@@ -38,6 +43,14 @@ while [[ $# -gt 0 ]]; do
         exit 1
       fi
       LOCAL_FILE="$2"
+      shift 2
+      ;;
+    --url)
+      if [[ -z "${2:-}" ]]; then
+        echo "Error: --url requires a URL argument" >&2
+        exit 1
+      fi
+      DIRECT_URL="$2"
       shift 2
       ;;
     -h|--help)
@@ -91,6 +104,29 @@ if [[ -n "$LOCAL_FILE" ]]; then
 
   cp "$LOCAL_FILE" "$asset_path"
   echo "Installing from local file: ${LOCAL_FILE}"
+elif [[ -n "$DIRECT_URL" ]]; then
+  # Direct URL mode: download from provided URL
+  if ! command -v curl >/dev/null; then
+    echo "curl is required to download from URL." >&2
+    exit 1
+  fi
+
+  # Extract version from URL filename (e.g., .../ui24r-mini-mixer-v1.0.0.tar.gz -> v1.0.0)
+  url_basename=$(basename "$DIRECT_URL")
+  tag_name="${url_basename%.tar.gz}"
+  tag_name="${tag_name#ui24r-mini-mixer-}"
+
+  if [[ -f "$current_tag_file" && "$FORCE_UPDATE" != "1" ]]; then
+    current_tag=$(cat "$current_tag_file")
+    if [[ "$current_tag" == "$tag_name" ]]; then
+      echo "Already on ${tag_name}. Use --force to reinstall."
+      exit 0
+    fi
+  fi
+
+  echo "Downloading from ${DIRECT_URL}..."
+  curl -fsSL "$DIRECT_URL" -o "$asset_path"
+  echo "Downloaded ${tag_name}."
 else
   # Online mode: fetch from GitHub
   if ! command -v curl >/dev/null; then

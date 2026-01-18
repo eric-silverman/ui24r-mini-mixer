@@ -200,6 +200,14 @@ sudo /opt/ui24r-mini-mixer/scripts/pi/update.sh
 
 Add `--force` to reinstall the current version.
 
+**From a direct URL (Pi has internet, you have the URL):**
+
+```sh
+sudo /opt/ui24r-mini-mixer/scripts/pi/update.sh --url "https://github.com/.../ui24r-mini-mixer-v1.0.0.tar.gz"
+```
+
+This is useful when SSHing from a phone—just copy the release URL and paste it.
+
 **Offline (no internet on Pi):**
 
 1. Download the release tarball from GitHub Releases on your dev machine
