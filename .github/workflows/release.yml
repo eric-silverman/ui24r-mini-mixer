@@ -33,10 +33,15 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Install server production deps
+        run: npm ci --omit=dev --prefix server
+
       - name: Package release
         run: |
           tar -czf ui24r-mini-mixer-${{ github.ref_name }}.tar.gz \
+            --transform 's,^,ui24r-mini-mixer/,' \
             server/dist \
+            server/node_modules \
             server/package.json \
             server/package-lock.json \
             client/dist \
