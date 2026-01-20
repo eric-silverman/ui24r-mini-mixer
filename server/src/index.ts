@@ -17,6 +17,15 @@ import { setupWs } from './ws.js';
 loadEnv({ path: path.resolve(process.cwd(), '.env') });
 loadEnv({ path: path.resolve(process.cwd(), '..', '.env'), override: false });
 
+// Prevent unhandled errors from crashing the process
+process.on('uncaughtException', (error) => {
+  console.error('[UNCAUGHT EXCEPTION]', error);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('[UNHANDLED REJECTION]', reason);
+});
+
 const config = loadConfig();
 const AUX_BUS_IDS = Array.from({ length: 10 }, (_, index) => index + 1);
 const initialHost = config.host ?? 'Not configured';
