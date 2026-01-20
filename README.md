@@ -494,6 +494,17 @@ Can't connect:
 - Check local firewall rules for port `3001`.
 - If meters are not moving, enable Debug in the UI and check the console for `meter` messages.
 
+### iOS slow page load (TODO)
+
+**Issue:** On iOS, initial page load takes ~30 seconds on networks without internet access, while macOS Safari and the mixer's own web interface load instantly.
+
+**Investigation needed:**
+- The delay occurs before the request even reaches the Pi (iOS-side)
+- Likely related to iOS captive portal detection or mDNS resolution
+- Test: Does accessing the Pi by IP (`http://192.168.1.X`) instead of hostname (`http://mix.local`) load faster?
+- If IP is fast, the issue is mDNS resolution on iOS, not captive portal
+- The `scripts/install-reverse-proxy.sh` includes experimental captive portal interception via dnsmasq, but requires the mixer/router DHCP to use the Pi as DNS server
+
 Verify mixer state by hitting:
 
 ```sh
