@@ -334,7 +334,6 @@ export class Ui24rClient {
 
     this.subscriptions.push(statusSub);
     await this.conn.connect();
-    this.emitConnection('connected');
     if (this.debugEnabled && this.conn) {
       this.debugSub = this.conn.conn.inbound$.subscribe(message => {
         // eslint-disable-next-line no-console
