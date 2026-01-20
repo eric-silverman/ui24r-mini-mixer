@@ -25,13 +25,13 @@ export function setupWs(
 ) {
   const clients = new Set<ClientSocket>();
 
-  fastify.get('/ws', { websocket: true }, connection => {
-    const socket = connection.socket as ClientSocket;
-    clients.add(socket);
+  fastify.get('/ws', { websocket: true }, (socket) => {
+    const client = socket as unknown as ClientSocket;
+    clients.add(client);
     const payload: WsMessage = { type: 'state', data: getState() };
-    socket.send(JSON.stringify(payload));
-    socket.on('close', () => {
-      clients.delete(socket);
+    client.send(JSON.stringify(payload));
+    client.on('close', () => {
+      clients.delete(client);
     });
   });
 
