@@ -657,6 +657,10 @@ body {
   flex: 0 0 122px;
 }
 
+.section-stack:has(.channel-section-collapsed) {
+  flex: 0 0 auto;
+}
+
 .channel-stack {
   display: flex;
   flex-direction: column;
