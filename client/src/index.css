@@ -1254,8 +1254,8 @@ body {
 }
 
 .strip-id {
-  font-size: 11px;
-  letter-spacing: 0.12em;
+  font-size: 15px;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
   color: rgba(240, 244, 250, 0.92);
   font-weight: 700;
@@ -1266,8 +1266,8 @@ body {
 }
 
 .strip-id--compact {
-  font-size: 10px;
-  letter-spacing: 0.08em;
+  font-size: 13px;
+  letter-spacing: 0.01em;
 }
 
 .vgroup-strip-title {
