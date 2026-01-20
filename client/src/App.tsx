@@ -2811,7 +2811,7 @@ export default function App() {
           >
             <span className="icon-button-icon">?</span>
           </button>
-          {isDev && (
+          {(isDev || versionLabel) && (
             <span className="dev-badge">{versionLabel || 'Dev'}</span>
           )}
           {isDemo && gitSha && (
