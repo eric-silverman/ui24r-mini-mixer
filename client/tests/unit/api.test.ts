@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { fetchState, setFader, setMute, setSolo, connectMixer } from '../../src/lib/api';
+import { fetchState, fetchInitialData, setFader, setMute, setSolo, connectMixer } from '../../src/lib/api';
 import type { AppState, BusType } from '../../src/lib/types';
 
 // Mock fetch globally
@@ -416,6 +416,123 @@ describe('connectMixer', () => {
 
       await expect(connectMixer('host')).rejects.toThrow('Network error');
     });
+  });
+});
+
+describe('fetchInitialData', () => {
+  beforeEach(() => {
+    mockFetch.mockReset();
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const mockLayoutPayload = {
+    sections: [],
+    globalGroups: [],
+    globalSettings: {},
+    viewSettings: { offsetDb: 0, mixOrder: [] },
+  };
+
+  it('fetches state and layout in parallel for master bus', async () => {
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockAppState),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockLayoutPayload),
+      });
+
+    const result = await fetchInitialData('master', 0);
+
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+    expect(mockFetch).toHaveBeenCalledWith('/api/state?bus=master');
+    expect(mockFetch).toHaveBeenCalledWith('/api/layout?bus=master');
+    expect(result.state).toEqual(mockAppState);
+    expect(result.layout).toEqual(mockLayoutPayload);
+  });
+
+  it('fetches state and layout in parallel for aux bus', async () => {
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockAppState),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockLayoutPayload),
+      });
+
+    const result = await fetchInitialData('aux', 3);
+
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+    expect(mockFetch).toHaveBeenCalledWith('/api/state?bus=aux&busId=3');
+    expect(mockFetch).toHaveBeenCalledWith('/api/layout?bus=aux&busId=3');
+    expect(result.state).toEqual(mockAppState);
+    expect(result.layout).toEqual(mockLayoutPayload);
+  });
+
+  it('fetches state and layout in parallel for gain bus', async () => {
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockAppState),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockLayoutPayload),
+      });
+
+    const result = await fetchInitialData('gain', 0);
+
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+    expect(mockFetch).toHaveBeenCalledWith('/api/state?bus=gain');
+    expect(mockFetch).toHaveBeenCalledWith('/api/layout?bus=gain');
+    expect(result.state).toEqual(mockAppState);
+    expect(result.layout).toEqual(mockLayoutPayload);
+  });
+
+  it('throws error if state fetch fails', async () => {
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockLayoutPayload),
+      });
+
+    await expect(fetchInitialData('master', 0)).rejects.toThrow('Failed to load state');
+  });
+
+  it('throws error if layout fetch fails', async () => {
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockAppState),
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+      });
+
+    await expect(fetchInitialData('master', 0)).rejects.toThrow('Failed to load layout');
+  });
+
+  it('throws error on network failure', async () => {
+    // Both fetches happen in parallel, so we need to handle both
+    mockFetch
+      .mockRejectedValueOnce(new Error('Network error'))
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockLayoutPayload),
+      });
+
+    await expect(fetchInitialData('master', 0)).rejects.toThrow('Network error');
   });
 });
 

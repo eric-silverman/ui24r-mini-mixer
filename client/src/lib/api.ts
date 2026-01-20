@@ -1,4 +1,22 @@
 import type { AppState, BusType } from './types';
+import { fetchLayout, type LayoutPayload } from './layout';
+
+export type InitialData = {
+  state: AppState;
+  layout: LayoutPayload;
+};
+
+export async function fetchInitialData(
+  busType: BusType,
+  bus: number
+): Promise<InitialData> {
+  // Fetch state and layout in parallel for faster initial load
+  const [state, layout] = await Promise.all([
+    fetchState(busType, bus),
+    fetchLayout(busType, bus, false),
+  ]);
+  return { state, layout };
+}
 
 export async function fetchState(busType: BusType, bus: number): Promise<AppState> {
   const params =

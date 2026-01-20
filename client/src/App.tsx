@@ -4,7 +4,7 @@ import ChannelStrip from './components/ChannelStrip';
 import VGroupStrip from './components/VGroupStrip';
 import ConnectionPill from './components/ConnectionPill';
 import ChannelMinimap from './components/ChannelMinimap';
-import { connectMixer, fetchState, setFader, setMute, setSolo } from './lib/api';
+import { connectMixer, fetchInitialData, fetchState, setFader, setMute, setSolo } from './lib/api';
 import { throttle } from './lib/debounce';
 import { fetchLayout, saveLayout } from './lib/layout';
 import { buildSampleState } from './lib/sampleData';
@@ -555,53 +555,9 @@ export default function App() {
     setShowAllAuxMixes(false);
   }, [assignedAuxId]);
 
+  // Combined effect for fetching state and layout - parallelized for faster load
   useEffect(() => {
-    if (sampleMode) {
-      // Only build sample state once initially, then let user changes persist
-      if (!sampleModeInitializedRef.current) {
-        const initialState = buildSampleState(activeBus.type, activeBus.id);
-        // Initialize solo states from sample data
-        if (activeBus.type === 'master') {
-          initialState.channels.forEach(channel => {
-            if (channel.solo !== undefined) {
-              masterSoloRef.current[channel.id] = channel.solo;
-            }
-          });
-        }
-        setState(initialState);
-        sampleModeInitializedRef.current = true;
-      } else {
-        // Update busType on channels when switching buses in sample mode
-        setState(current => {
-          // Save solo states when leaving master
-          if (current.bus.type === 'master') {
-            current.channels.forEach(channel => {
-              if (channel.solo !== undefined) {
-                masterSoloRef.current[channel.id] = channel.solo;
-              }
-            });
-          }
-          return {
-            ...current,
-            bus: { type: activeBus.type, id: activeBus.id },
-            channels: current.channels.map(channel => ({
-              ...channel,
-              busType: activeBus.type,
-              bus: activeBus.id,
-              // Solo is only supported on master bus - restore from saved state
-              solo: activeBus.type === 'master' ? (masterSoloRef.current[channel.id] ?? false) : undefined,
-            })),
-          };
-        });
-      }
-      return;
-    }
-    fetchState(activeBus.type, activeBus.id)
-      .then(next => setState(next))
-      .catch(() => setState(EMPTY_STATE));
-  }, [activeBus, sampleMode]);
-
-  useEffect(() => {
+    // Reset layout tracking refs
     layoutLoadedRef.current = false;
     layoutDirtyRef.current = false;
     if (layoutSaveTimeoutRef.current) {
@@ -626,38 +582,82 @@ export default function App() {
       viewSettingsSaveTimeoutRef.current = null;
     }
 
-    fetchLayout(activeBus.type, activeBus.id, sampleMode)
-      .then(payload => {
-        setAuxLayout(activeBus.type === 'aux' ? payload.sections ?? [] : []);
-        setGlobalGroups(payload.globalGroups ?? []);
-        setGlobalSettings(payload.globalSettings ?? {});
-        const nextViewSettings = payload.viewSettings ?? {
-          offsetDb: 0,
-          mixOrder: [],
-        };
-        if (activeBus.type === 'aux') {
-          setViewSettings(current => ({
-            ...current,
-            aux: { ...current.aux, [activeBus.id]: nextViewSettings },
-          }));
-        } else {
-          setViewSettings(current => ({ ...current, [activeBus.type]: nextViewSettings }));
-          setViewOffsets(current => ({
-            ...current,
-            [activeBus.type]: nextViewSettings.offsetDb ?? 0,
-          }));
+    const applyLayout = (payload: { sections?: typeof auxLayout; globalGroups?: typeof globalGroups; globalSettings?: typeof globalSettings; viewSettings?: ViewSettings }) => {
+      setAuxLayout(activeBus.type === 'aux' ? payload.sections ?? [] : []);
+      setGlobalGroups(payload.globalGroups ?? []);
+      setGlobalSettings(payload.globalSettings ?? {});
+      const nextViewSettings = payload.viewSettings ?? {
+        offsetDb: 0,
+        mixOrder: [],
+      };
+      if (activeBus.type === 'aux') {
+        setViewSettings(current => ({
+          ...current,
+          aux: { ...current.aux, [activeBus.id]: nextViewSettings },
+        }));
+      } else {
+        setViewSettings(current => ({ ...current, [activeBus.type]: nextViewSettings }));
+        setViewOffsets(current => ({
+          ...current,
+          [activeBus.type]: nextViewSettings.offsetDb ?? 0,
+        }));
+      }
+      layoutLoadedRef.current = true;
+      globalLoadedRef.current = true;
+    };
+
+    if (sampleMode) {
+      // Sample mode: use local data for state, localStorage for layout
+      if (!sampleModeInitializedRef.current) {
+        const initialState = buildSampleState(activeBus.type, activeBus.id);
+        if (activeBus.type === 'master') {
+          initialState.channels.forEach(channel => {
+            if (channel.solo !== undefined) {
+              masterSoloRef.current[channel.id] = channel.solo;
+            }
+          });
         }
-        layoutLoadedRef.current = true;
-        globalLoadedRef.current = true;
+        setState(initialState);
+        sampleModeInitializedRef.current = true;
+      } else {
+        setState(current => {
+          if (current.bus.type === 'master') {
+            current.channels.forEach(channel => {
+              if (channel.solo !== undefined) {
+                masterSoloRef.current[channel.id] = channel.solo;
+              }
+            });
+          }
+          return {
+            ...current,
+            bus: { type: activeBus.type, id: activeBus.id },
+            channels: current.channels.map(channel => ({
+              ...channel,
+              busType: activeBus.type,
+              bus: activeBus.id,
+              solo: activeBus.type === 'master' ? (masterSoloRef.current[channel.id] ?? false) : undefined,
+            })),
+          };
+        });
+      }
+      // Fetch layout from localStorage for sample mode
+      fetchLayout(activeBus.type, activeBus.id, true)
+        .then(applyLayout)
+        .catch(() => applyLayout({}));
+      return;
+    }
+
+    // Live mode: fetch state and layout in parallel for faster initial load
+    fetchInitialData(activeBus.type, activeBus.id)
+      .then(({ state: nextState, layout }) => {
+        setState(nextState);
+        applyLayout(layout);
       })
       .catch(() => {
-        setAuxLayout([]);
-        setGlobalGroups([]);
-        setGlobalSettings({});
-        layoutLoadedRef.current = true;
-        globalLoadedRef.current = true;
+        setState(EMPTY_STATE);
+        applyLayout({});
       });
-  }, [activeBus.type, activeBus.id, sampleMode]);
+  }, [activeBus, sampleMode]);
 
   const channelIds = useMemo(() => state.channels.map(channel => channel.id), [state.channels]);
   const normalizedLayout = useMemo(

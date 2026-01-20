@@ -3,6 +3,7 @@ import fs from 'fs';
 import { config as loadEnv } from 'dotenv';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import compress from '@fastify/compress';
 import websocket from '@fastify/websocket';
 import fastifyStatic from '@fastify/static';
 import { z } from 'zod';
@@ -45,6 +46,7 @@ let layoutStore = createLayoutStore(config.host);
 const app = Fastify({ logger: true });
 
 await app.register(cors, { origin: true });
+await app.register(compress, { threshold: 1024 });
 await app.register(websocket);
 
 await layoutStore.load();
@@ -55,6 +57,14 @@ const hasClientDist = fs.existsSync(clientDistPath);
 if (hasClientDist) {
   await app.register(fastifyStatic, {
     root: clientDistPath,
+    maxAge: '1d',
+    immutable: false,
+    setHeaders: (res, filePath) => {
+      // Versioned assets (with hash in filename) can be cached indefinitely
+      if (/\.[a-f0-9]{8,}\.(js|css)$/.test(filePath)) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      }
+    },
   });
 }
 

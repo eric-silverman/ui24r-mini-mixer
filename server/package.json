@@ -12,6 +12,7 @@
     "test:coverage": "vitest --run --coverage"
   },
   "dependencies": {
+    "@fastify/compress": "^8.3.1",
     "@fastify/cors": "^8.5.0",
     "@fastify/static": "^6.12.0",
     "@fastify/websocket": "^8.3.1",
