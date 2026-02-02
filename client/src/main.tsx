@@ -1,3 +1,9 @@
+// Polyfill ResizeObserver for Safari 12 (added in Safari 13)
+import ResizeObserver from 'resize-observer-polyfill';
+if (typeof window !== 'undefined' && !window.ResizeObserver) {
+  window.ResizeObserver = ResizeObserver;
+}
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
