@@ -23,6 +23,32 @@ function forceAllLegacy(): Plugin {
       // Remove nomodule attributes so the legacy scripts run for ALL browsers
       html = html.replace(/ nomodule/g, '');
 
+      // Add debug script to track loading stages
+      const debugScript = `
+    <div id="debug" style="position:fixed;top:0;left:0;background:yellow;padding:10px;z-index:9999;font-size:14px;">Stage: HTML</div>
+    <script>
+      window.onerror = function(msg, url, line) {
+        document.getElementById('debug').textContent = 'ERROR: ' + msg + ' at line ' + line;
+        document.getElementById('debug').style.background = 'red';
+        document.getElementById('debug').style.color = 'white';
+        return false;
+      };
+      document.getElementById('debug').textContent = 'Stage: Basic JS';
+    </script>`;
+
+      html = html.replace('<div id="root"></div>', '<div id="root"></div>' + debugScript);
+
+      // Add debug hooks to polyfill and entry scripts
+      html = html.replace(
+        /(<script crossorigin id="vite-legacy-polyfill")/,
+        '<script>document.getElementById("debug").textContent = "Stage: Loading polyfills...";</script>\n    $1'
+      );
+
+      html = html.replace(
+        /(<script crossorigin id="vite-legacy-entry")/,
+        '<script>document.getElementById("debug").textContent = "Stage: Polyfills loaded, loading app...";</script>\n    $1'
+      );
+
       return html;
     },
   };
