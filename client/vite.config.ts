@@ -5,25 +5,19 @@ import legacy from '@vitejs/plugin-legacy';
 
 // Custom plugin to fix Safari 12-13 compatibility
 // Safari 12-13 support ES modules but not nullish coalescing (??) or optional chaining (?.)
-// This plugin removes the modern bundle script tag entirely for maximum compatibility.
-// All browsers will load the legacy bundle instead.
-function forceAllLegacy(): Plugin {
+// This plugin adds ?? to the detection script so Safari 12-13 fail and use legacy bundle.
+// Modern browsers still get the fast native module bundle.
+function safariLegacyDetection(): Plugin {
   return {
-    name: 'force-all-legacy',
+    name: 'safari-legacy-detection',
     enforce: 'post',
     transformIndexHtml(html) {
-      // Remove the modern bundle script tag entirely
-      // This forces ALL browsers to use the legacy bundle via the nomodule fallback
-      html = html.replace(/<script type="module" crossorigin src="[^"]+"><\/script>\n?/g, '');
-
-      // Remove the modern detection scripts
-      html = html.replace(/<script type="module">import\.meta\.url.*?<\/script>\n?/g, '');
-      html = html.replace(/<script type="module">!function\(\)\{if\(window\.__vite_is_modern_browser\).*?<\/script>\n?/g, '');
-
-      // Remove nomodule attributes so the legacy scripts run for ALL browsers
-      html = html.replace(/ nomodule/g, '');
-
-      return html;
+      // Add nullish coalescing test to Vite's modern browser detection
+      // Safari 12-13 will get a syntax error and fall back to legacy bundle
+      return html.replace(
+        /import\.meta\.url;import\("_"\)\.catch\(\(\)=>1\);\(async function\*\(\)\{\}\)\(\)\.next\(\);/g,
+        'import.meta.url;import("_").catch(()=>1);(async function*(){})().next();null??1;'
+      );
     },
   };
 }
@@ -73,8 +67,8 @@ export default defineConfig({
       // Explicitly include nullish coalescing polyfill
       modernPolyfills: ['es.object.has-own'],
     }),
-    // Force all browsers to use legacy bundle for Safari 12-13 compatibility
-    forceAllLegacy(),
+    // Add ?? detection so Safari 12-13 fall back to legacy bundle
+    safariLegacyDetection(),
   ],
   // Base path for GitHub Pages deployment (set via VITE_BASE_PATH env var)
   base: process.env.VITE_BASE_PATH || '/',
