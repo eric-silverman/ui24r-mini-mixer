@@ -65,9 +65,13 @@ export default defineConfig({
     react(),
     legacy({
       // Legacy bundle targets - browsers that need full transpilation
-      targets: ['iOS >= 12', 'safari >= 12', 'chrome >= 64', 'firefox >= 60'],
+      targets: ['iOS 12', 'safari 12'],
       // Polyfills for modern features used in the app
       additionalLegacyPolyfills: ['regenerator-runtime/runtime'],
+      // Force rendering of legacy chunks even in dev
+      renderLegacyChunks: true,
+      // Explicitly include nullish coalescing polyfill
+      modernPolyfills: ['es.object.has-own'],
     }),
     // Force all browsers to use legacy bundle for Safari 12-13 compatibility
     forceAllLegacy(),
